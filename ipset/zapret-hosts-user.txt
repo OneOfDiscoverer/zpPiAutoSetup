@@ -23,6 +23,10 @@ nhacmp3youtube.com
 youtubei.googleapis.com 
 youtu.be
 cloud-universe.anycubic.com
+xv-ru.com
+xhamster.com
+ru.xhamster.com
+
 
 18.221.242.25
 162.159.130.234

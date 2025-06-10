@@ -26,6 +26,7 @@ IPSET_DIR="$ZAPRET_BASE/ipset"
 . "$ZAPRET_BASE/common/ipt.sh"
 . "$ZAPRET_BASE/common/installer.sh"
 . "$ZAPRET_BASE/common/virt.sh"
+. "$ZAPRET_BASE/common/list.sh"
 
 GET_LIST="$IPSET_DIR/get_config.sh"
 
@@ -68,8 +69,15 @@ check_bins()
 		echo found architecture "\"$arch\""
 	elif [ -f "$EXEDIR/Makefile" ] && exists make; then
 		echo trying to compile
-		[ "$SYSTEM" = "macos" ] && make_target=mac
-		make -C "$EXEDIR" $make_target || {
+		case $SYSTEM in
+			macos)
+				make_target=mac
+				;;
+			systemd)
+				make_target=systemd
+				;;
+		esac
+		CFLAGS="-march=native ${CFLAGS}" make -C "$EXEDIR" $make_target || {
 			echo could not compile
 			make -C "$EXEDIR" clean
 			exitp 8
@@ -114,6 +122,30 @@ ws_opt_validate()
 		return 1
 	}
 	return 0
+}
+tpws_opt_validate()
+{
+	ws_opt_validate "$1" || return 1
+	dry_run_tpws || {
+		echo invalid tpws options
+		return 1
+	}
+}
+tpws_socks_opt_validate()
+{
+	# --ipset allowed here
+	dry_run_tpws_socks || {
+		echo invalid tpws options
+		return 1
+	}
+}
+nfqws_opt_validate()
+{
+	ws_opt_validate "$1" || return 1
+	dry_run_nfqws || {
+		echo invalid nfqws options
+		return 1
+	}
 }
 
 select_mode_group()
@@ -162,18 +194,17 @@ select_mode_group()
 select_mode_tpws_socks()
 {
 	local EDITVAR_NEWLINE_DELIMETER="--new" EDITVAR_NEWLINE_VARS="TPWS_SOCKS_OPT"
-	# --ipset allowed here
-	select_mode_group TPWS_SOCKS_ENABLE "enable tpws socks mode on port $TPPORT_SOCKS ?" "TPPORT_SOCKS TPWS_SOCKS_OPT"
+	select_mode_group TPWS_SOCKS_ENABLE "enable tpws socks mode on port $TPPORT_SOCKS ?" "TPPORT_SOCKS TPWS_SOCKS_OPT" tpws_socks_opt_validate TPWS_SOCKS_OPT
 }
 select_mode_tpws()
 {
 	local EDITVAR_NEWLINE_DELIMETER="--new" EDITVAR_NEWLINE_VARS="TPWS_OPT"
-	select_mode_group TPWS_ENABLE "enable tpws transparent mode ?" "TPWS_PORTS TPWS_OPT" ws_opt_validate TPWS_OPT
+	select_mode_group TPWS_ENABLE "enable tpws transparent mode ?" "TPWS_PORTS TPWS_OPT" tpws_opt_validate TPWS_OPT
 }
 select_mode_nfqws()
 {
 	local EDITVAR_NEWLINE_DELIMETER="--new" EDITVAR_NEWLINE_VARS="NFQWS_OPT"
-	select_mode_group NFQWS_ENABLE "enable nfqws ?" "NFQWS_PORTS_TCP NFQWS_PORTS_UDP NFQWS_TCP_PKT_OUT NFQWS_TCP_PKT_IN NFQWS_UDP_PKT_OUT NFQWS_UDP_PKT_IN NFQWS_PORTS_TCP_KEEPALIVE NFQWS_PORTS_UDP_KEEPALIVE NFQWS_OPT" ws_opt_validate NFQWS_OPT
+	select_mode_group NFQWS_ENABLE "enable nfqws ?" "NFQWS_PORTS_TCP NFQWS_PORTS_UDP NFQWS_TCP_PKT_OUT NFQWS_TCP_PKT_IN NFQWS_UDP_PKT_OUT NFQWS_UDP_PKT_IN NFQWS_PORTS_TCP_KEEPALIVE NFQWS_PORTS_UDP_KEEPALIVE NFQWS_OPT" nfqws_opt_validate NFQWS_OPT
 }
 
 select_mode_mode()
@@ -210,7 +241,7 @@ select_getlist()
 		local D=N
 		[ -n "$GETLIST" ] && D=Y
 		echo
-		if ask_yes_no $D "do you want to auto download ip/host list" && echo -ne '\n'; then
+		if ask_yes_no $D "do you want to auto download ip/host list"; then
 			if [ "$MODE_FILTER" = "hostlist" -o "$MODE_FILTER" = "autohostlist" ] ; then
 				GETLISTS="get_refilter_domains.sh get_antizapret_domains.sh get_reestr_resolvable_domains.sh get_reestr_hostlist.sh"
 				GETLIST_DEF="get_antizapret_domains.sh"
@@ -268,7 +299,7 @@ ask_config_tmpdir()
 		echo default tmpfs has size of 50% RAM
 		echo "RAM  : $(get_ram_mb) Mb"
 		echo "DISK : $(get_free_space_mb) Mb"
-		echo select temp file location 
+		echo select temp file location
 		[ -z "$TMPDIR" ] && TMPDIR=/tmp
 		ask_list TMPDIR "/tmp $EXEDIR/tmp" && {
 		    [ "$TMPDIR" = "/tmp" ] && TMPDIR=
@@ -364,13 +395,13 @@ copy_openwrt()
 	local ARCH="$(get_bin_arch)"
 	local BINDIR="$1/binaries/$ARCH"
 	local file
-	
+
 	[ -d "$2" ] || mkdir -p "$2"
 
 	mkdir "$2/tpws" "$2/nfq" "$2/ip2net" "$2/mdig" "$2/binaries" "$2/binaries/$ARCH" "$2/init.d" "$2/tmp" "$2/files"
 	cp -R "$1/files/fake" "$2/files"
 	cp -R "$1/common" "$1/ipset" "$2"
-	cp -R "$1/init.d/openwrt" "$2/init.d"
+	cp -R "$1/init.d/openwrt" "$1/init.d/custom.d.examples.linux" "$2/init.d"
 	cp "$1/config" "$1/config.default" "$1/install_easy.sh" "$1/uninstall_easy.sh" "$1/install_bin.sh" "$1/install_prereq.sh" "$1/blockcheck.sh" "$2"
 	cp "$BINDIR/tpws" "$BINDIR/nfqws" "$BINDIR/ip2net" "$BINDIR/mdig" "$2/binaries/$ARCH"
 }
@@ -458,7 +489,7 @@ _restore_settings()
 		[ -z "$f" -o "$f" = "/" ] && continue
 
 		[ -f "/tmp/zapret-bkp-$i" ] && {
-			mv -f "/tmp/zapret-bkp-$i" "$ZAPRET_TARGET/$f" || rm -f "/tmp/zapret-bkp-$i" 
+			mv -f "/tmp/zapret-bkp-$i" "$ZAPRET_TARGET/$f" || rm -f "/tmp/zapret-bkp-$i"
 		}
 		[ -d "/tmp/zapret-bkp-$i" ] && {
 			[ -d "$ZAPRET_TARGET/$f" ] && rm -r "$ZAPRET_TARGET/$f"
@@ -700,7 +731,7 @@ install_linux()
 	crontab_del_quiet
 	# desktop system. more likely up at daytime
 	crontab_add 10 22
-	
+
 	echo
 	echo '!!! WARNING. YOUR SETUP IS INCOMPLETE !!!'
 	echo you must manually add to auto start : $INIT_SCRIPT_SRC start
@@ -748,7 +779,6 @@ deoffload_openwrt_firewall()
 	else
 		echo system wide software flow offloading disabled. ok
 	fi
-			
 }
 
 

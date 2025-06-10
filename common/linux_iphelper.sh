@@ -4,6 +4,8 @@
 # PREROUTING - can't DNAT to ::1. can DNAT to link local of -i interface or to any global addr
 # not a good idea to expose tpws to the world (bind to ::)
 
+# max wait time for the link local ipv6 on the LAN interface
+LINKLOCAL_WAIT_SEC=${LINKLOCAL_WAIT_SEC:-5}
 
 get_ipv6_linklocal()
 {
@@ -109,6 +111,14 @@ unprepare_route_localnet()
 	set_route_localnet 0 "$@"
 }
 
+get_uevent_devtype()
+{
+	local DEVTYPE INTERFACE IFINDEX OF_NAME OF_FULLNAME OF_COMPATIBLE_N
+	[ -f "/sys/class/net/$1/uevent" ] && {
+		. "/sys/class/net/$1/uevent"
+		echo -n $DEVTYPE
+	}
+}
 resolve_lower_devices()
 {
 	# $1 - bridge interface name

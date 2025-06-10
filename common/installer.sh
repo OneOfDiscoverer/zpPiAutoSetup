@@ -1,4 +1,4 @@
-readonly GET_LIST_PREFIX=/ipset/get_
+GET_LIST_PREFIX=/ipset/get_
 
 SYSTEMD_DIR=/lib/systemd
 [ -d "$SYSTEMD_DIR" ] || SYSTEMD_DIR=/usr/lib/systemd
@@ -140,7 +140,7 @@ echo_var()
 	eval v="\$$1"
 	if find_str_in_list $1 "$EDITVAR_NEWLINE_VARS"; then
 		echo "$1=\""
-		echo "$v\"" | sed "s/$EDITVAR_NEWLINE_DELIMETER /$EDITVAR_NEWLINE_DELIMETER\n/g"
+		echo "$v\"" | tr '\n' ' ' | tr -d '\r' | sed -e 's/^ *//' -e 's/ *$//' -e "s/$EDITVAR_NEWLINE_DELIMETER /$EDITVAR_NEWLINE_DELIMETER\n/g"
 	else
 		if contains "$v" " "; then
 			echo $1=\"$v\"
@@ -170,6 +170,7 @@ list_vars()
 		echo_var $1
 		shift
 	done
+	echo
 }
 
 openrc_test()
@@ -616,11 +617,17 @@ write_config_var()
 	replace_var_def $1 "$M" "$ZAPRET_CONFIG"
 }
 
+no_prereq_exit()
+{
+	echo could not install prerequisites
+	exitp 6
+}
 check_prerequisites_linux()
 {
 	echo \* checking prerequisites
 
 	local s cmd PKGS UTILS req="curl curl"
+	local APTGET DNF YUM PACMAN ZYPPER EOPKG APK
 	case "$FWTYPE" in
 		iptables)
 			req="$req iptables iptables ip6tables iptables ipset ipset"
@@ -649,6 +656,7 @@ check_prerequisites_linux()
 		echo packages required : $PKGS
 
 		APTGET=$(whichq apt-get)
+		DNF=$(whichq dnf)
 		YUM=$(whichq yum)
 		PACMAN=$(whichq pacman)
 		ZYPPER=$(whichq zypper)
@@ -656,39 +664,23 @@ check_prerequisites_linux()
 		APK=$(whichq apk)
 		if [ -x "$APTGET" ] ; then
 			"$APTGET" update
-			"$APTGET" install -y --no-install-recommends $PKGS dnsutils || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$APTGET" install -y --no-install-recommends $PKGS dnsutils || no_prereq_exit
+		elif [ -x "$DNF" ] ; then
+			"$DNF" -y install $PKGS || no_prereq_exit
 		elif [ -x "$YUM" ] ; then
-			"$YUM" -y install $PKGS || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$YUM" -y install $PKGS || no_prereq_exit
 		elif [ -x "$PACMAN" ] ; then
 			"$PACMAN" -Syy
-			"$PACMAN" --noconfirm -S $PKGS || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$PACMAN" --noconfirm -S $PKGS || no_prereq_exit
 		elif [ -x "$ZYPPER" ] ; then
-			"$ZYPPER" --non-interactive install $PKGS || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$ZYPPER" --non-interactive install $PKGS || no_prereq_exit
 		elif [ -x "$EOPKG" ] ; then
-			"$EOPKG" -y install $PKGS || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$EOPKG" -y install $PKGS || no_prereq_exit
 		elif [ -x "$APK" ] ; then
 			"$APK" update
 			# for alpine
 			[ "$FWTYPE" = iptables ] && [ -n "$($APK list ip6tables)" ] && PKGS="$PKGS ip6tables"
-			"$APK" add $PKGS || {
-				echo could not install prerequisites
-				exitp 6
-			}
+			"$APK" add $PKGS || no_prereq_exit
 		else
 			echo supported package manager not found
 			echo you must manually install : $UTILS
@@ -836,4 +828,38 @@ select_fwtype()
 	}
 	echo select firewall type :
 	ask_list FWTYPE "iptables nftables" "$FWTYPE" && write_config_var FWTYPE
+}
+
+dry_run_tpws_()
+{
+	local TPWS="$ZAPRET_BASE/tpws/tpws"
+	echo verifying tpws options
+	"$TPWS" --dry-run "$@"
+}
+dry_run_nfqws_()
+{
+	local NFQWS="$ZAPRET_BASE/nfq/nfqws"
+	echo verifying nfqws options
+	"$NFQWS" --dry-run "$@"
+}
+dry_run_tpws()
+{
+	[ "$TPWS_ENABLE" = 1 ] || return 0
+	local opt="$TPWS_OPT" port=${TPPORT_SOCKS:-988}
+	filter_apply_hostlist_target opt
+	dry_run_tpws_ --port=$port $opt
+}
+dry_run_tpws_socks()
+{
+	[ "$TPWS_SOCKS_ENABLE" = 1 ] || return 0
+	local opt="$TPWS_SOCKS_OPT" port=${TPPORT:-987}
+	filter_apply_hostlist_target opt
+	dry_run_tpws_ --port=$port --socks $opt
+}
+dry_run_nfqws()
+{
+	[ "$NFQWS_ENABLE" = 1 ] || return 0
+	local opt="$NFQWS_OPT" qn=${QNUM:-200}
+	filter_apply_hostlist_target opt
+	dry_run_nfqws_ --qnum=$qn $opt
 }

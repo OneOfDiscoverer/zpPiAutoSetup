@@ -1,5 +1,9 @@
 std_ports
-readonly ipt_connbytes="-m connbytes --connbytes-dir=original --connbytes-mode=packets --connbytes"
+ipt_connbytes="-m connbytes --connbytes-dir=original --connbytes-mode=packets --connbytes"
+IPSET_EXCLUDE="-m set ! --match-set nozapret"
+IPSET_EXCLUDE6="-m set ! --match-set nozapret6"
+IPBAN_EXCLUDE="-m set ! --match-set ipban"
+IPBAN_EXCLUDE6="-m set ! --match-set ipban6"
 
 ipt()
 {
@@ -132,7 +136,7 @@ _fw_tpws4()
 
 		ipt_print_op $1 "$2" "tpws (port $3)"
 
-		rule="$2 $IPSET_EXCLUDE dst -j DNAT --to $TPWS_LOCALHOST4:$3"
+		rule="$2 $IPSET_EXCLUDE dst $IPBAN_EXCLUDE dst -j DNAT --to $TPWS_LOCALHOST4:$3"
 		for i in $4 ; do
 			ipt_add_del $1 PREROUTING -t nat -i $i $rule
 	 	done
@@ -160,7 +164,7 @@ _fw_tpws6()
 
 		ipt_print_op $1 "$2" "tpws (port $3)" 6
 
-		rule="$2 $IPSET_EXCLUDE6 dst"
+		rule="$2 $IPSET_EXCLUDE6 dst $IPBAN_EXCLUDE6 dst"
 		for i in $4 ; do
 			_dnat6_target $i DNAT6
 			[ -n "$DNAT6" -a "$DNAT6" != "-" ] && ipt6_add_del $1 PREROUTING -t nat -i $i $rule -j DNAT --to [$DNAT6]:$3
@@ -349,26 +353,36 @@ ipt_do_nfqws_in_out()
 	}
 }
 
-zapret_do_firewall_standard_rules_ipt()
+zapret_do_firewall_standard_tpws_rules_ipt()
 {
 	# $1 - 1 - add, 0 - del
 
 	local f4 f6
 
-	[ "$TPWS_ENABLE" = 1 -a -n "$TPWS_PORTS" ] &&
-	{
+	[ "$TPWS_ENABLE" = 1 -a -n "$TPWS_PORTS" ] && {
 		f4="-p tcp -m multiport --dports $TPWS_PORTS_IPT"
 		f6=$f4
 		filter_apply_ipset_target f4 f6
 		fw_tpws $1 "$f4" "$f6" $TPPORT
 	}
-	[ "$NFQWS_ENABLE" = 1 ] &&
-	{
+}
+zapret_do_firewall_standard_nfqws_rules_ipt()
+{
+	# $1 - 1 - add, 0 - del
+
+	[ "$NFQWS_ENABLE" = 1 ] && {
 		ipt_do_nfqws_in_out $1 tcp "$NFQWS_PORTS_TCP_IPT" "$NFQWS_TCP_PKT_OUT" "$NFQWS_TCP_PKT_IN"
 		ipt_do_nfqws_in_out $1 tcp "$NFQWS_PORTS_TCP_KEEPALIVE_IPT" keepalive "$NFQWS_TCP_PKT_IN"
 		ipt_do_nfqws_in_out $1 udp "$NFQWS_PORTS_UDP_IPT" "$NFQWS_UDP_PKT_OUT" "$NFQWS_UDP_PKT_IN"
 		ipt_do_nfqws_in_out $1 udp "$NFQWS_PORTS_UDP_KEEPALIVE_IPT" keepalive "$NFQWS_UDP_PKT_IN"
 	}
+}
+zapret_do_firewall_standard_rules_ipt()
+{
+	# $1 - 1 - add, 0 - del
+
+	zapret_do_firewall_standard_tpws_rules_ipt $1
+	zapret_do_firewall_standard_nfqws_rules_ipt $1
 }
 
 zapret_do_firewall_rules_ipt()
@@ -377,6 +391,27 @@ zapret_do_firewall_rules_ipt()
 
 	zapret_do_firewall_standard_rules_ipt $1
 	custom_runner zapret_custom_firewall $1
+	zapret_do_icmp_filter $1
+}
+
+zapret_do_icmp_filter()
+{
+	# $1 - 1 - add, 0 - del
+
+	local FW_EXTRA_PRE= FW_EXTRA_POST=
+
+	[ "$FILTER_TTL_EXPIRED_ICMP" = 1 ] && {
+		[ "$DISABLE_IPV4" = 1 ] || {
+			ipt_add_del $1 POSTROUTING -t mangle -m mark --mark $DESYNC_MARK/$DESYNC_MARK -j CONNMARK --or-mark $DESYNC_MARK
+			ipt_add_del $1 INPUT -p icmp -m icmp --icmp-type time-exceeded -m connmark --mark $DESYNC_MARK/$DESYNC_MARK -j DROP
+			ipt_add_del $1 FORWARD -p icmp -m icmp --icmp-type time-exceeded -m connmark --mark $DESYNC_MARK/$DESYNC_MARK -j DROP
+		}
+		[ "$DISABLE_IPV6" = 1 ] || {
+			ipt6_add_del $1 POSTROUTING -t mangle -m mark --mark $DESYNC_MARK/$DESYNC_MARK -j CONNMARK --or-mark $DESYNC_MARK
+			ipt6_add_del $1 INPUT -p icmpv6 -m icmp6 --icmpv6-type time-exceeded -m connmark --mark $DESYNC_MARK/$DESYNC_MARK -j DROP
+			ipt6_add_del $1 FORWARD -p icmpv6 -m icmp6 --icmpv6-type time-exceeded -m connmark --mark $DESYNC_MARK/$DESYNC_MARK -j DROP
+		}
+	}
 }
 
 zapret_do_firewall_ipt()

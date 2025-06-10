@@ -1,5 +1,5 @@
 [ -n "$ZAPRET_NFT_TABLE" ] || ZAPRET_NFT_TABLE=zapret
-readonly nft_connbytes="ct original packets"
+nft_connbytes="ct original packets"
 
 # required for : nft -f -
 create_dev_stdin
@@ -106,7 +106,7 @@ cat << EOF | nft -f -
 	flush chain inet $ZAPRET_NFT_TABLE predefrag_nfqws
 	add rule inet $ZAPRET_NFT_TABLE predefrag mark and $DESYNC_MARK !=0 jump predefrag_nfqws comment "nfqws generated : avoid drop by INVALID conntrack state"
 	add rule inet $ZAPRET_NFT_TABLE predefrag_nfqws mark and $DESYNC_MARK_POSTNAT !=0 notrack comment "postnat traffic"
-	add rule inet $ZAPRET_NFT_TABLE predefrag_nfqws ip frag-off != 0 notrack comment "ipfrag"
+	add rule inet $ZAPRET_NFT_TABLE predefrag_nfqws ip frag-off & 0x1fff != 0 notrack comment "ipfrag"
 	add rule inet $ZAPRET_NFT_TABLE predefrag_nfqws exthdr frag exists notrack comment "ipfrag"
 	add rule inet $ZAPRET_NFT_TABLE predefrag_nfqws tcp flags ! syn,rst,ack notrack comment "datanoack"
 	add set inet $ZAPRET_NFT_TABLE lanif { type ifname; }
@@ -118,6 +118,20 @@ EOF
 	[ -n "$POSTNAT_ALL" ] && {
 		nft_flush_chain predefrag_nfqws
 		nft_add_rule predefrag_nfqws notrack comment \"do not track nfqws generated packets to avoid nat tampering and defragmentation\"
+	}
+	[ "$FILTER_TTL_EXPIRED_ICMP" = 1 ] && {
+		if is_postnat; then
+			# can be caused by untracked nfqws-generated packets
+			nft_add_rule prerouting icmp type time-exceeded ct state invalid drop
+		else
+			nft_add_rule postrouting_hook mark and $DESYNC_MARK != 0 ct mark set ct mark or $DESYNC_MARK comment \"nfqws related : prevent ttl expired socket errors\"
+		fi
+		[ "$DISABLE_IPV4" = "1" ] || {
+			nft_add_rule prerouting icmp type time-exceeded ct mark and $DESYNC_MARK != 0 drop comment \"nfqws related : prevent ttl expired socket errors\"
+		}
+		[ "$DISABLE_IPV6" = "1" ] || {
+			nft_add_rule prerouting icmpv6 type time-exceeded ct mark and $DESYNC_MARK != 0 drop comment \"nfqws related : prevent ttl expired socket errors\"
+		}
 	}
 }
 nft_del_chains()
@@ -263,28 +277,6 @@ nft_add_flow_offload_exemption()
 	[ "$DISABLE_IPV6" = "1" -o -z "$2" ] || nft_add_rule flow_offload oifname @wanif6 $2 ip6 daddr != @nozapret6 return comment \"$3\"
 }
 
-nft_hw_offload_supported()
-{
-	# $1,$2,... - interface names
-	local devices res=1
-	make_quoted_comma_list devices "$@"
-	[ -n "$devices" ] && devices="devices={$devices};"
-	nft add table ${ZAPRET_NFT_TABLE}_test && nft add flowtable ${ZAPRET_NFT_TABLE}_test ft "{ flags offload; $devices }" 2>/dev/null && res=0
-	nft delete table ${ZAPRET_NFT_TABLE}_test 2>/dev/null
-	return $res
-}
-
-nft_hw_offload_find_supported()
-{
-	# $1,$2,... - interface names
-	local supported_list
-	while [ -n "$1" ]; do
-		nft_hw_offload_supported "$1" && append_separator_list supported_list ' ' '' "$1"
-		shift
-	done
-	echo $supported_list
-}
-
 nft_apply_flow_offloading()
 {
 	# ft can be absent
@@ -342,7 +334,7 @@ nft_fill_ifsets()
 	# $5 - space separated wan physical interface names (optional)
 	# $6 - space separated wan6 physical interface names (optional)
 
-	local script i j ALLDEVS devs
+	local script i j ALLDEVS devs b
 
 	# if large sets exist nft works very ineffectively
 	# looks like it analyzes the whole table blob to find required data pieces
@@ -370,17 +362,18 @@ flush set inet $ZAPRET_NFT_TABLE lanif"
 			nft_create_or_update_flowtable 'offload' 2>/dev/null
 			# then add elements. some of them can cause error because unsupported
 			for i in $ALLDEVS; do
-				if nft_hw_offload_supported $i; then
-					nft_create_or_update_flowtable 'offload' $i
-				else
-					# bridge members must be added instead of the bridge itself
-					# some members may not support hw offload. example : lan1 lan2 lan3 support, wlan0 wlan1 - not
-					devs=$(resolve_lower_devices $i)
-					for j in $devs; do
-						# do not display error if addition failed
-						nft_create_or_update_flowtable 'offload' $j 2>/dev/null
-					done
-				fi
+				# bridge members must be added instead of the bridge itself
+				# some members may not support hw offload. example : lan1 lan2 lan3 support, wlan0 wlan1 - not
+				b=
+				devs=$(resolve_lower_devices $i)
+				for j in $devs; do
+					# do not display error if addition failed
+					nft_create_or_update_flowtable 'offload' $j && b=1 2>/dev/null
+				done
+				[ -n "$b" ] || {
+					# no lower devices added ? try to add interface itself
+					nft_create_or_update_flowtable 'offload' $i 2>/dev/null
+				}
 			done
 			;;
 	esac
@@ -411,8 +404,8 @@ _nft_fw_tpws4()
 	[ "$DISABLE_IPV4" = "1" -o -z "$1" ] || {
 		local filter="$1" port="$2"
 		nft_print_op "$filter" "tpws (port $2)" 4
-		nft_insert_rule dnat_output skuid != $WS_USER ${3:+oifname @wanif }$filter ip daddr != @nozapret $FW_EXTRA_POST dnat ip to $TPWS_LOCALHOST4:$port
-		nft_insert_rule dnat_pre iifname @lanif $filter ip daddr != @nozapret $FW_EXTRA_POST dnat ip to $TPWS_LOCALHOST4:$port
+		nft_insert_rule dnat_output skuid != $WS_USER ${3:+oifname @wanif }$filter ip daddr != @nozapret ip daddr != @ipban $FW_EXTRA_POST dnat ip to $TPWS_LOCALHOST4:$port
+		nft_insert_rule dnat_pre iifname @lanif $filter ip daddr != @nozapret ip daddr != @ipban $FW_EXTRA_POST dnat ip to $TPWS_LOCALHOST4:$port
 		prepare_route_localnet
 	}
 }
@@ -426,9 +419,9 @@ _nft_fw_tpws6()
 	[ "$DISABLE_IPV6" = "1" -o -z "$1" ] || {
 		local filter="$1" port="$2" DNAT6 i
 		nft_print_op "$filter" "tpws (port $port)" 6
-		nft_insert_rule dnat_output skuid != $WS_USER ${4:+oifname @wanif6 }$filter ip6 daddr != @nozapret6 $FW_EXTRA_POST dnat ip6 to [::1]:$port
+		nft_insert_rule dnat_output skuid != $WS_USER ${4:+oifname @wanif6 }$filter ip6 daddr != @nozapret6 ip6 daddr != @ipban6 $FW_EXTRA_POST dnat ip6 to [::1]:$port
 		[ -n "$3" ] && {
-			nft_insert_rule dnat_pre $filter ip6 daddr != @nozapret6 $FW_EXTRA_POST dnat ip6 to iifname map @link_local:$port
+			nft_insert_rule dnat_pre $filter ip6 daddr != @nozapret6 ip6 daddr != @ipban6 $FW_EXTRA_POST dnat ip6 to iifname map @link_local:$port
 			for i in $3; do
 				_dnat6_target $i DNAT6
 				# can be multiple tpws processes on different ports
@@ -477,7 +470,7 @@ _nft_fw_nfqws_post4()
 		nft_print_op "$filter" "nfqws postrouting (qnum $port)" 4
 		rule="${3:+oifname @wanif }$filter ip daddr != @nozapret"
 		is_postnat && setmark="meta mark set meta mark or $DESYNC_MARK_POSTNAT"
-		nft_insert_rule $chain $rule $setmark $FW_EXTRA_POST queue num $port bypass
+		nft_insert_rule $chain $rule $setmark $CONNMARKER $FW_EXTRA_POST queue num $port bypass
 		nft_add_nfqws_flow_exempt_rule "$rule"
 	}
 }
@@ -492,7 +485,7 @@ _nft_fw_nfqws_post6()
 		nft_print_op "$filter" "nfqws postrouting (qnum $port)" 6
 		rule="${3:+oifname @wanif6 }$filter ip6 daddr != @nozapret6"
 		is_postnat && setmark="meta mark set meta mark or $DESYNC_MARK_POSTNAT"
-		nft_insert_rule $chain $rule $setmark $FW_EXTRA_POST queue num $port bypass
+		nft_insert_rule $chain $rule $setmark $CONNMARKER $FW_EXTRA_POST queue num $port bypass
 		nft_add_nfqws_flow_exempt_rule "$rule"
 	}
 }
@@ -516,7 +509,7 @@ _nft_fw_nfqws_pre4()
 		local filter="$1" port="$2" rule
 		nft_print_op "$filter" "nfqws prerouting (qnum $port)" 4
 		rule="${3:+iifname @wanif }$filter ip saddr != @nozapret"
-		nft_insert_rule $(get_prechain) $rule $FW_EXTRA_POST queue num $port bypass
+		nft_insert_rule $(get_prechain) $rule $CONNMARKER $FW_EXTRA_POST queue num $port bypass
 	}
 }
 _nft_fw_nfqws_pre6()
@@ -529,7 +522,7 @@ _nft_fw_nfqws_pre6()
 		local filter="$1" port="$2" rule
 		nft_print_op "$filter" "nfqws prerouting (qnum $port)" 6
 		rule="${3:+iifname @wanif6 }$filter ip6 saddr != @nozapret6"
-		nft_insert_rule $(get_prechain) $rule $FW_EXTRA_POST queue num $port bypass
+		nft_insert_rule $(get_prechain) $rule $CONNMARKER $FW_EXTRA_POST queue num $port bypass
 	}
 }
 nft_fw_nfqws_pre()
@@ -640,24 +633,30 @@ nft_apply_nfqws_in_out()
 	}
 }
 
-zapret_apply_firewall_standard_rules_nft()
+zapret_apply_firewall_standard_tpws_rules_nft()
 {
 	local f4 f6
 
-	[ "$TPWS_ENABLE" = 1 -a -n "$TPWS_PORTS" ] &&
-	{
+	[ "$TPWS_ENABLE" = 1 -a -n "$TPWS_PORTS" ] && {
 		f4="tcp dport {$TPWS_PORTS}"
 		f6=$f4
 		nft_filter_apply_ipset_target f4 f6
 		nft_fw_tpws "$f4" "$f6" $TPPORT
 	}
-	[ "$NFQWS_ENABLE" = 1 ] &&
-	{
+}
+zapret_apply_firewall_standard_nfqws_rules_nft()
+{
+	[ "$NFQWS_ENABLE" = 1 ] && {
 		nft_apply_nfqws_in_out tcp "$NFQWS_PORTS_TCP" "$NFQWS_TCP_PKT_OUT" "$NFQWS_TCP_PKT_IN"
 		nft_apply_nfqws_in_out tcp "$NFQWS_PORTS_TCP_KEEPALIVE" keepalive "$NFQWS_TCP_PKT_IN"
 		nft_apply_nfqws_in_out udp "$NFQWS_PORTS_UDP" "$NFQWS_UDP_PKT_OUT" "$NFQWS_UDP_PKT_IN"
 		nft_apply_nfqws_in_out udp "$NFQWS_PORTS_UDP_KEEPALIVE" keepalive "$NFQWS_UDP_PKT_IN"
 	}
+}
+zapret_apply_firewall_standard_rules_nft()
+{
+	zapret_apply_firewall_standard_tpws_rules_nft
+	zapret_apply_firewall_standard_nfqws_rules_nft
 }
 
 zapret_apply_firewall_rules_nft()
@@ -701,3 +700,7 @@ zapret_do_firewall_nft()
 
 	return 0
 }
+
+# ctmark is not available in POSTNAT mode
+CONNMARKER=
+[ "$FILTER_TTL_EXPIRED_ICMP" = 1 ] && is_postnat && CONNMARKER="ct mark set ct mark or $DESYNC_MARK"

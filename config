@@ -59,7 +59,7 @@ TPWS_SOCKS_OPT="
 "
 
 TPWS_ENABLE=0
-TPWS_PORTS=80,443
+TPWS_PORTS=80,433
 # use <HOSTLIST> and <HOSTLIST_NOAUTO> placeholders to engage standard hostlists and autohostlist in ipset dir
 # hostlist markers are replaced to empty string if MODE_FILTER does not satisfy
 # <HOSTLIST_NOAUTO> appends ipset/zapret-hosts-auto.txt as normal list
@@ -96,10 +96,12 @@ NFQWS_UDP_PKT_IN=0
 #--filter-udp=50000-65535 --dpi-desync=fake --dpi-desync-ttl=4
 #"
 
+#--filter-tcp=443 --dpi-desync=split2 --dpi-desync-split-seqovl=652 --dpi-desync-repeats=15 <HOSTLIST> --new
+
 NFQWS_OPT="
---filter-tcp=80 --dpi-desync=multidisorder --dpi-desync-ttl=1 --dpi-desync-autottl=4 --dpi-desync-split-pos=method+2 <HOSTLIST> --new
---filter-tcp=443 --dpi-desync=multidisorder --dpi-desync-split-pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1 --dpi-desync-fake-tls="/opt/zapret/files/fake/tls_clienthello_www_google_com.bin" --new
---filter-udp=443 --dpi-desync=fake --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" --new
+--filter-tcp=80 --dpi-desync=multidisorder --dpi-desync-fake-tls="/opt/zapret/files/fake/tls_clienthello_www_google_com.bin" <HOSTLIST> --new
+--filter-tcp=443 --dpi-desync=multidisorder --dpi-desync-fake-tls="/opt/zapret/files/fake/tls_clienthello_www_google_com.bin" <HOSTLIST> --new
+--filter-udp=443 --dpi-desync=fake --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" <HOSTLIST> --new
 "
 #--filter-udp=443 --dpi-desync=multidisorder --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" <HOSTLIST --new
 #--filter-udp=443 --dpi-desync=multidisorder --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" <HOSTLIST>

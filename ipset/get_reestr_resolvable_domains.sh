@@ -23,16 +23,18 @@ dl()
    echo list download failed : $1
    exit 2
   }
-  dlsize=$(LANG=C wc -c "$TMPLIST" | xargs | cut -f 1 -d ' ')
+  dlsize=$(LC_ALL=C LANG=C wc -c "$TMPLIST" | xargs | cut -f 1 -d ' ')
   if test $dlsize -lt $3; then
    echo list is too small : $dlsize bytes. can be bad.
    exit 2
   fi
-  zzcat "$TMPLIST" | zz "$2"
+  zzcopy "$TMPLIST" "$2"
   rm -f "$TMPLIST"
 }
 
 dl "$URL" "$ZHOSTLIST" 65536 67108864
+
+hup_zapret_daemons
 
 [ "$DISABLE_IPV4" != "1" ] && dl "$IPB4" "$ZIPLIST_IPBAN" 8192 1048576
 [ "$DISABLE_IPV6" != "1" ] && dl "$IPB6" "$ZIPLIST_IPBAN6" 128 1048576

@@ -5,7 +5,7 @@ ZAPRET_RW=${ZAPRET_RW:-"$ZAPRET_BASE"}
 ZAPRET_CONFIG=${ZAPRET_CONFIG:-"$ZAPRET_RW/config"}
 IPSET_RW_DIR="$ZAPRET_RW/ipset"
 
-. "$ZAPRET_CONFIG"
+[ -f "$ZAPRET_CONFIG" ] && . "$ZAPRET_CONFIG"
 . "$ZAPRET_BASE/common/base.sh"
 
 [ -z "$TMPDIR" ] && TMPDIR=/tmp
@@ -141,6 +141,18 @@ zzsize()
   printf 0
  fi
 }
+zzcopy()
+{
+ local is_gz=0
+ zztest "$1" && is_gz=1
+ if [ "$GZIP_LISTS" = 1 -a $is_gz = 1 ]; then
+  cp "$1" "${2}.gz"
+ elif [ "$GZIP_LISTS" != 1 -a $is_gz != 1 ]; then
+  cp "$1" "$2"
+ else
+  zzcat "$1" | zz "$2"
+ fi
+}
 
 digger()
 {
@@ -254,4 +266,18 @@ getipban()
  getexclude || return
  _get_ipban
  return 0
+}
+
+hup_zapret_daemons()
+{
+ echo forcing zapret daemons to reload their hostlist
+ if exists killall; then
+  killall -HUP tpws nfqws dvtws 2>/dev/null
+ elif exists pkill; then
+  pkill -HUP ^tpws$
+  pkill -HUP ^nfqws$
+  pkill -HUP ^dvtws$
+ else
+  echo no mass killer available ! cant HUP zapret daemons
+ fi
 }
