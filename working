@@ -1,0 +1,40 @@
+!!!!! curl_test_https_tls12: working strategy found for ipv4 xv-ru.com : nfqws --dpi-desync=fake,multidisorder --dpi-desync-fooling=badseq --dpi-desync-split-pos=midsld !!!!!
+
+clearing nfqws redirection
+
+* SUMMARY
+ipv4 xv-ru.com curl_test_http : tpws --split-pos=method+2 --oob
+ipv4 xv-ru.com curl_test_http : tpws --methodeol
+ipv4 xv-ru.com curl_test_http : nfqws --methodeol
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=3 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-fooling=md5sig --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=3 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-fooling=md5sig --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=3 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-fooling=md5sig --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=1 --dpi-desync-autottl=-1 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=1 --dpi-desync-autottl=-2 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=1 --dpi-desync-autottl=-3 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=1 --dpi-desync-autottl=-4 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fake --dpi-desync-ttl=1 --dpi-desync-autottl=-5 --dpi-desync-fake-http=0x00000000
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=1 --dpi-desync-autottl=-1 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=1 --dpi-desync-autottl=-2 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=1 --dpi-desync-autottl=-3 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=1 --dpi-desync-autottl=-4 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakedsplit --dpi-desync-ttl=1 --dpi-desync-autottl=-5 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=1 --dpi-desync-autottl=-1 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=1 --dpi-desync-autottl=-2 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=1 --dpi-desync-autottl=-3 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=1 --dpi-desync-autottl=-4 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=fakeddisorder --dpi-desync-ttl=1 --dpi-desync-autottl=-5 --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata --dpi-desync-fake-syndata=/opt/zapret/files/fake/http_iana_org.bin
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata,multisplit --dpi-desync-split-pos=midsld
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata,multisplit --dpi-desync-fake-syndata=/opt/zapret/files/fake/http_iana_org.bin --dpi-desync-split-pos=midsld
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata,multidisorder --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_http : nfqws --dpi-desync=syndata,multidisorder --dpi-desync-fake-syndata=/opt/zapret/files/fake/http_iana_org.bin --dpi-desync-split-pos=method+2
+ipv4 xv-ru.com curl_test_https_tls12 : tpws not working
+ipv4 xv-ru.com curl_test_https_tls12 : nfqws --dpi-desync=fake,multidisorder --dpi-desync-fooling=badseq --dpi-desync-split-pos=midsld
+ipv4 xv-ru.com curl_test_https_tls12 : nfqws --dpi-desync=fake,fakeddisorder --dpi-desync-fooling=badseq --dpi-desync-split-pos=midsld
+ipv4 xv-ru.com curl_test_https_tls12 : nfqws --dpi-desync=fake,fakeddisorder --orig-autottl=+1 --dpi-desync-ttl=1 --dpi-desync-autottl=-2 --dpi-desync-split-pos=1 --dpi-desync-fake-tls=0x00000000 --dpi-desync-fake-tls=! --dpi-desync-fake-tls-mod=rnd,rndsni,dupsid
+ipv4 xv-ru.com curl_test_https_tls12 : nfqws --dpi-desync=syndata --dpi-desync-fake-syndata=/opt/zapret/files/fake/tls_clienthello_iana_org.bin

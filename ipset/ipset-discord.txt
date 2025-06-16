@@ -1,0 +1,12 @@
+162.159.137.232
+162.159.138.232
+162.159.129.233
+162.159.130.233
+104.16.59.5
+104.16.60.5
+
+discord.com
+discord.gg
+cdn.discordapp.com
+gateway.discord.gg
+status.discord.com
