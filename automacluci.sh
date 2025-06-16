@@ -214,7 +214,7 @@ main() {
         
         if [ "$new_mac" = "$target_mac" ]; then
             log_msg "Script completed successfully - MAC address applied"
-	    reboot
+	    reboot -f
         else
             log_msg "WARNING: UCI updated but interface MAC may need more time to update"
             log_msg "Current interface MAC: $new_mac, Expected: $target_mac"
