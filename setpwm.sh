@@ -10,4 +10,8 @@ echo "normal" > /sys/class/pwm/pwmchip0/pwm0/polarity
 # enable the PWM
 echo 1 > /sys/class/pwm/pwmchip0/pwm0/enable
 # set duty cycle to 1ms
-echo 3000000 > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
+if [ -n "$FANPWM" ]; then
+ echo "$FANPWM" > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
+else
+ echo 3000000 > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
+fi
