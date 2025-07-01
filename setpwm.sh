@@ -15,3 +15,6 @@ if [ -n "$FANPWM" ]; then
 else
  echo 3000000 > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
 fi
+
+
+#echo 'export FANPWM="10000000" >> /etc/profile

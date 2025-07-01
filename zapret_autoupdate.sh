@@ -82,7 +82,6 @@ update_zapret() {
         log_message "Updates found. Pulling changes..."
         
         # Pull updates
-	git stash
         git pull 2>&1 | while read line; do
             log_message "GIT: $line"
         done
