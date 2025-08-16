@@ -47,6 +47,8 @@ discordsez.com
 discord-activities.com
 discordactivities.com
 stable.dl2.discordapp.net
+updates.discord.com
+*discord.com
 
 *.instagram.com
 *.instagram.net

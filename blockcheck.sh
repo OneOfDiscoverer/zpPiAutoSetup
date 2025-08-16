@@ -396,13 +396,24 @@ check_system()
 			PKTWS="$WINWS"
 			PKTWSD=winws
 			FWTYPE=windivert
+			# ts fooling requires timestamps. they are disabled by default in windows.
+			echo enabling tcp timestamps
+			netsh interface tcp set global timestamps=enabled >/dev/null
 			;;
 		*)
 			echo $UNAME not supported
 			exitp 5
 	esac
 	echo $UNAME${SUBSYS:+/$SUBSYS} detected
+	echo -n 'kernel: '
+	if [ -f "/proc/version" ]; then
+		cat /proc/version
+	else
+		uname -a
+	fi
 	echo firewall type is $FWTYPE
+	echo CURL=$CURL
+	$CURL --version
 }
 
 zp_already_running()
@@ -627,7 +638,11 @@ curl_with_subst_ip()
 	# $2 - port
 	# $3 - ip
 	# $4+ - curl params
-	local connect_to="--connect-to $1::[$3]${2:+:$2}" arg
+	local ip="$3"
+	case "$ip" in
+		*:*) ip="[$ip]" ;;
+	esac
+	local connect_to="--connect-to $1::$ip${2:+:$2}" arg
 	shift ; shift ; shift
 	[ "$CURL_VERBOSE" = 1 ] && arg="-v"
 	[ "$CURL_CMD" = 1 ] && echo $CURL ${arg:+$arg }$connect_to "$@"
@@ -1062,7 +1077,7 @@ tpws_curl_test()
 	# $1 - test function
 	# $2 - domain
 	# $3,$4,$5, ... - tpws params
-	echo - $1 $2 : tpws $3 $4 $5 $6 $7 $8 $9${TPWS_EXTRA:+ $TPWS_EXTRA}${TPWS_EXTRA_1:+ "$TPWS_EXTRA_1"}${TPWS_EXTRA_2:+ "$TPWS_EXTRA_2"}${TPWS_EXTRA_3:+ "$TPWS_EXTRA_3"}${TPWS_EXTRA_4:+ "$TPWS_EXTRA_4"}${TPWS_EXTRA_5:+ "$TPWS_EXTRA_5"}${TPWS_EXTRA_6:+ "$TPWS_EXTRA_6"}${TPWS_EXTRA_7:+ "$TPWS_EXTRA_7"}${TPWS_EXTRA_8:+ "$TPWS_EXTRA_8"}${TPWS_EXTRA_9:+ "$TPWS_EXTRA_9"}
+	echo - $1 ipv$IPV $2 : tpws $3 $4 $5 $6 $7 $8 $9${TPWS_EXTRA:+ $TPWS_EXTRA}${TPWS_EXTRA_1:+ "$TPWS_EXTRA_1"}${TPWS_EXTRA_2:+ "$TPWS_EXTRA_2"}${TPWS_EXTRA_3:+ "$TPWS_EXTRA_3"}${TPWS_EXTRA_4:+ "$TPWS_EXTRA_4"}${TPWS_EXTRA_5:+ "$TPWS_EXTRA_5"}${TPWS_EXTRA_6:+ "$TPWS_EXTRA_6"}${TPWS_EXTRA_7:+ "$TPWS_EXTRA_7"}${TPWS_EXTRA_8:+ "$TPWS_EXTRA_8"}${TPWS_EXTRA_9:+ "$TPWS_EXTRA_9"}
 	local ALL_PROXY="socks5://127.0.0.1:$SOCKS_PORT"
 	ws_curl_test tpws_start "$@"${TPWS_EXTRA:+ $TPWS_EXTRA}${TPWS_EXTRA_1:+ "$TPWS_EXTRA_1"}${TPWS_EXTRA_2:+ "$TPWS_EXTRA_2"}${TPWS_EXTRA_3:+ "$TPWS_EXTRA_3"}${TPWS_EXTRA_4:+ "$TPWS_EXTRA_4"}${TPWS_EXTRA_5:+ "$TPWS_EXTRA_5"}${TPWS_EXTRA_6:+ "$TPWS_EXTRA_6"}${TPWS_EXTRA_7:+ "$TPWS_EXTRA_7"}${TPWS_EXTRA_8:+ "$TPWS_EXTRA_8"}${TPWS_EXTRA_9:+ "$TPWS_EXTRA_9"}
 	local testf=$1 dom=$2 strategy code=$?
@@ -1082,7 +1097,7 @@ pktws_curl_test()
 	local testf=$1 dom=$2 strategy code
 
 	shift; shift;
-	echo - $testf $dom : $PKTWSD ${WF:+$WF }${PKTWS_EXTRA_PRE:+$PKTWS_EXTRA_PRE }${PKTWS_EXTRA_PRE_1:+"$PKTWS_EXTRA_PRE_1" }${PKTWS_EXTRA_PRE_2:+"$PKTWS_EXTRA_PRE_2" }${PKTWS_EXTRA_PRE_3:+"$PKTWS_EXTRA_PRE_3" }${PKTWS_EXTRA_PRE_4:+"$PKTWS_EXTRA_PRE_4" }${PKTWS_EXTRA_PRE_5:+"$PKTWS_EXTRA_PRE_5" }${PKTWS_EXTRA_PRE_6:+"$PKTWS_EXTRA_PRE_6" }${PKTWS_EXTRA_PRE_7:+"$PKTWS_EXTRA_PRE_7" }${PKTWS_EXTRA_PRE_8:+"$PKTWS_EXTRA_PRE_8" }${PKTWS_EXTRA_PRE_9:+"$PKTWS_EXTRA_PRE_9" }$@${PKTWS_EXTRA:+ $PKTWS_EXTRA}${PKTWS_EXTRA_1:+ "$PKTWS_EXTRA_1"}${PKTWS_EXTRA_2:+ "$PKTWS_EXTRA_2"}${PKTWS_EXTRA_3:+ "$PKTWS_EXTRA_3"}${PKTWS_EXTRA_4:+ "$PKTWS_EXTRA_4"}${PKTWS_EXTRA_5:+ "$PKTWS_EXTRA_5"}${PKTWS_EXTRA_6:+ "$PKTWS_EXTRA_6"}${PKTWS_EXTRA_7:+ "$PKTWS_EXTRA_7"}${PKTWS_EXTRA_8:+ "$PKTWS_EXTRA_8"}${PKTWS_EXTRA_9:+ "$PKTWS_EXTRA_9"}
+	echo - $testf ipv$IPV $dom : $PKTWSD ${WF:+$WF }${PKTWS_EXTRA_PRE:+$PKTWS_EXTRA_PRE }${PKTWS_EXTRA_PRE_1:+"$PKTWS_EXTRA_PRE_1" }${PKTWS_EXTRA_PRE_2:+"$PKTWS_EXTRA_PRE_2" }${PKTWS_EXTRA_PRE_3:+"$PKTWS_EXTRA_PRE_3" }${PKTWS_EXTRA_PRE_4:+"$PKTWS_EXTRA_PRE_4" }${PKTWS_EXTRA_PRE_5:+"$PKTWS_EXTRA_PRE_5" }${PKTWS_EXTRA_PRE_6:+"$PKTWS_EXTRA_PRE_6" }${PKTWS_EXTRA_PRE_7:+"$PKTWS_EXTRA_PRE_7" }${PKTWS_EXTRA_PRE_8:+"$PKTWS_EXTRA_PRE_8" }${PKTWS_EXTRA_PRE_9:+"$PKTWS_EXTRA_PRE_9" }$@${PKTWS_EXTRA:+ $PKTWS_EXTRA}${PKTWS_EXTRA_1:+ "$PKTWS_EXTRA_1"}${PKTWS_EXTRA_2:+ "$PKTWS_EXTRA_2"}${PKTWS_EXTRA_3:+ "$PKTWS_EXTRA_3"}${PKTWS_EXTRA_4:+ "$PKTWS_EXTRA_4"}${PKTWS_EXTRA_5:+ "$PKTWS_EXTRA_5"}${PKTWS_EXTRA_6:+ "$PKTWS_EXTRA_6"}${PKTWS_EXTRA_7:+ "$PKTWS_EXTRA_7"}${PKTWS_EXTRA_8:+ "$PKTWS_EXTRA_8"}${PKTWS_EXTRA_9:+ "$PKTWS_EXTRA_9"}
 	ws_curl_test pktws_start $testf $dom ${PKTWS_EXTRA_PRE:+$PKTWS_EXTRA_PRE }${PKTWS_EXTRA_PRE_1:+"$PKTWS_EXTRA_PRE_1" }${PKTWS_EXTRA_PRE_2:+"$PKTWS_EXTRA_PRE_2" }${PKTWS_EXTRA_PRE_3:+"$PKTWS_EXTRA_PRE_3" }${PKTWS_EXTRA_PRE_4:+"$PKTWS_EXTRA_PRE_4" }${PKTWS_EXTRA_PRE_5:+"$PKTWS_EXTRA_PRE_5" }${PKTWS_EXTRA_PRE_6:+"$PKTWS_EXTRA_PRE_6" }${PKTWS_EXTRA_PRE_7:+"$PKTWS_EXTRA_PRE_7" }${PKTWS_EXTRA_PRE_8:+"$PKTWS_EXTRA_PRE_8" }${PKTWS_EXTRA_PRE_9:+"$PKTWS_EXTRA_PRE_9" }"$@"${PKTWS_EXTRA:+ $PKTWS_EXTRA}${PKTWS_EXTRA_1:+ "$PKTWS_EXTRA_1"}${PKTWS_EXTRA_2:+ "$PKTWS_EXTRA_2"}${PKTWS_EXTRA_3:+ "$PKTWS_EXTRA_3"}${PKTWS_EXTRA_4:+ "$PKTWS_EXTRA_4"}${PKTWS_EXTRA_5:+ "$PKTWS_EXTRA_5"}${PKTWS_EXTRA_6:+ "$PKTWS_EXTRA_6"}${PKTWS_EXTRA_7:+ "$PKTWS_EXTRA_7"}${PKTWS_EXTRA_8:+ "$PKTWS_EXTRA_8"}${PKTWS_EXTRA_9:+ "$PKTWS_EXTRA_9"}
 
 	code=$?
@@ -1183,6 +1198,7 @@ warn_fool()
 				echo "WARNING ! fakedsplit/fakeddisorder with md5sig fooling and low split position causes MTU overflow with multi-segment TLS (kyber)"
 			;;
 		datanoack) echo 'WARNING ! although datanoack fooling worked it may break NAT and may only work with external IP. Additionally it may require nftables to work correctly.' ;;
+		ts) echo 'WARNING ! although ts fooling worked it will not work without timestamps being enabled in the client OS. In windows timestamps are DISABLED by default.'
 	esac
 }
 pktws_curl_test_update_vary()
@@ -1309,7 +1325,7 @@ pktws_check_domain_http_bypass_()
 			}
 			f=
 			[ "$UNAME" = "OpenBSD" ] || f="badsum"
-			f="$f badseq datanoack md5sig"
+			f="$f badseq datanoack ts md5sig"
 			[ "$IPV" = 6 ] && f="$f hopbyhop hopbyhop2"
 			for fooling in $f; do
 				ok=0
