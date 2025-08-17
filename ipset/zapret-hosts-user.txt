@@ -25,6 +25,10 @@ youtu.be
 cloud-universe.anycubic.com
 gateway.discord.gg
 
+doubleclick.net
+googleads.g.doubleclick.net
+*.googlevideo.com
+
 dis.gd
 discord-attachments-uploads-prd.storage.googleapis.com
 discord.app

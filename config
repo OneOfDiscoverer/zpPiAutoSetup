@@ -94,18 +94,11 @@ NFQWS_UDP_PKT_IN=0
 
 
 NFQWS_OPT="
---debug=@/opt/zapret/log.txt
+--debug=@/tmp/log/log.zapret
 --filter-tcp=80 --filter-l7=http --dpi-desync=multidisorder --methodeol <HOSTLIST> --new
---filter-udp=443 --dpi-desync=fake --dpi-desync-ttl=4 <HOSTLIST> --new
---filter-tcp=443 --dpi-desync=multisplit --dpi-desync-repeats=2 --dpi-desync-split-pos=2 --dpi-desync-split-seqovl=802 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello_iana_org.bin <HOSTLIST> --new
+--filter-udp=443 --dpi-desync=fake --dpi-desync-ttl=4 --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin <HOSTLIST> --new
+--filter-tcp=443 --filter-l7=tls --dpi-desync=multisplit --dpi-desync-split-pos=1 --dpi-desync-split-seqovl=802 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello_iana_org.bin <HOSTLIST> --new
 "
-#--new --filter-udp=50000-50099 --filter-l7=discord,stun --dpi-desync=fake
-#--dpi-desync=fake --dpi-desync-ttl=0 --dpi-desync-ttl6=0 --dpi-desync-fooling=badsum
-#--filter-tcp=443 --dpi-desync=multidisorder --dpi-desync-ttl=4 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com --dpi-desync-autottl=8 --dpi-desync-split-pos=method+2 --dpi-desync-split-pos=1,sniext+1,host+1,midsld-2,midsld,midsld+2,endhost-1 --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin --new
-
-#--filter-udp=443 --dpi-desync=multidisorder --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" <HOSTLIST --new
-#--filter-udp=443 --dpi-desync=multidisorder --dpi-desync-fake-quic="/opt/zapret/files/fake/quic_initial_www_google_com.bin" <HOSTLIST>
-#--dpi-desync=fake --dpi-desync-ttl=4
 
 # none,ipset,hostlist,autohostlist
 MODE_FILTER=autohostlist
