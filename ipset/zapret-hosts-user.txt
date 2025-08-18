@@ -27,7 +27,7 @@ gateway.discord.gg
 
 doubleclick.net
 googleads.g.doubleclick.net
-*.googlevideo.com
+*googlevideo.com
 
 dis.gd
 discord-attachments-uploads-prd.storage.googleapis.com

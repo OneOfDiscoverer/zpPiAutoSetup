@@ -18,3 +18,5 @@ pagead2.googlesyndication.com
 api.mixpanel.com
 34211.ms.vk.com
 worldtimeapi.org
+rutracker.org
+static.rutracker.cc
