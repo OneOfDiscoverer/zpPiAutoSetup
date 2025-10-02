@@ -74,7 +74,7 @@ update_zapret() {
     done
     
     # Check if there are updates
-    NEW_COMMIT=$(git rev-parse origin/HEAD 2>/dev/null || git rev-parse origin/master 2>/dev/null)
+    NEW_COMMIT=$(git rev-parse origin/master 2>/dev/null)
     
     if [ "$OLD_COMMIT" = "$NEW_COMMIT" ]; then
         log_message "No updates available"
@@ -82,9 +82,6 @@ update_zapret() {
         log_message "Updates found. Pulling changes..."
         
         # Pull updates
-	git stash
-	git checkout master
-	git reset --hard origin/master
         git pull 2>&1 | while read line; do
             log_message "GIT: $line"
         done
