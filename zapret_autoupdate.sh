@@ -69,7 +69,7 @@ update_zapret() {
     
     # Fetch updates
     log_message "Fetching updates from remote repository"
-    git fetch origin/master 2>&1 | while read line; do
+    git fetch origin 2>&1 | while read line; do
         log_message "GIT: $line"
     done
     
