@@ -20,3 +20,4 @@ api.mixpanel.com
 worldtimeapi.org
 rutracker.org
 static.rutracker.cc
+gateway.instagram.com

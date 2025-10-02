@@ -82,6 +82,7 @@ update_zapret() {
         log_message "Updates found. Pulling changes..."
         
         # Pull updates
+	git reset --hard origin/main
         git pull 2>&1 | while read line; do
             log_message "GIT: $line"
         done
