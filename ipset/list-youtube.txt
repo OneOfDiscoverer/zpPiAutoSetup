@@ -9,6 +9,7 @@ youtube.googleapis.com
 youtubei.googleapis.com
 yt-video-upload.l.google.com
 wide-youtube.l.google.com
+youtube.com
 
 discord.com
 gateway.discord.gg
@@ -32,3 +33,10 @@ discord.dev
 discord.new
 discord.gift
 discordstatus.com
+yt3.googleusercontent.com
+www.instagram.com
+scontent-hel3-1.cdninstagram.com
+graph.instagram.com
+ru.xhamster.com
+collector.xhamster.com
+vnt.xhamster.com
