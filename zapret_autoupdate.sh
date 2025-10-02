@@ -82,8 +82,11 @@ update_zapret() {
         log_message "Updates found. Pulling changes..."
         
         # Pull updates
+<<<<<<< HEAD
 	git stash
 	git checkout master
+=======
+>>>>>>> 39a086a (fix update 2.0)
 	git reset --hard origin/master
         git pull 2>&1 | while read line; do
             log_message "GIT: $line"
