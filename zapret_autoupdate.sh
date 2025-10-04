@@ -74,7 +74,7 @@ update_zapret() {
     done
     
     # Check if there are updates
-    NEW_COMMIT=$(git rev-parse origin/master 2>/dev/null)
+    NEW_COMMIT=$(git rev-parse origin/main 2>/dev/null)
     
     if [ "$OLD_COMMIT" = "$NEW_COMMIT" ]; then
         log_message "No updates available"
