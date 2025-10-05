@@ -15,4 +15,5 @@ exit 0
 
 ./dnssetup.sh
 ./setup_zapret_autoupdate.sh
+./sethosts.sh
 ./automacluci.sh

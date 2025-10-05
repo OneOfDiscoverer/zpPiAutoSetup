@@ -40,3 +40,4 @@ graph.instagram.com
 ru.xhamster.com
 collector.xhamster.com
 vnt.xhamster.com
+rutracker.org
