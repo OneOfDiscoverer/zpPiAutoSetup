@@ -1,2 +1,8 @@
 gateway.instagram.com
 pagead2.googlesyndication.com
+www.facebook.com
+graph.facebook.com
+connect.facebook.net
+scontent-hel3-1.cdninstagram.com
+graph.instagram.com
+i.instagram.com

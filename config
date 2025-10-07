@@ -97,7 +97,7 @@ NFQWS_OPT="
 --filter-tcp=80 --filter-l7=http --dpi-desync=multidisorder --methodeol <HOSTLIST> --new
 --filter-udp=443 --dpi-desync=fake --dpi-desync-ttl=4 --dpi-desync-fake-quic=/opt/zapret/files/fake/quic_initial_www_google_com.bin <HOSTLIST> --new
 --filter-tcp=443 --hostlist="/opt/zapret/ipset/list-youtube.txt" --dpi-desync=fake --dpi-desync-fake-tls=0x00000000 --dpi-desync-fake-tls=! --dpi-desync-fooling=badseq --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com --new
---filter-tcp=443 --dpi-desync=multidisorder --dpi-desync-split-pos=7,sld+1 --dpi-desync-autottl 2:2-12 --new
+--filter-tcp=443 --hostlist-exclude="/opt/zapret/ipset/zapret-hosts-user-exclude.txt" --dpi-desync=multidisorder --dpi-desync-split-pos=7,sld+1 --dpi-desync-autottl 2:2-12 --new
 "
 
 # none,ipset,hostlist,autohostlist
