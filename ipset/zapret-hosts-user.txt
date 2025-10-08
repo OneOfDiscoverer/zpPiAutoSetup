@@ -133,3 +133,4 @@ discord.new
 discord.gift
 discordstatus.com
 
+easylist-downloads.adblockplus.org
