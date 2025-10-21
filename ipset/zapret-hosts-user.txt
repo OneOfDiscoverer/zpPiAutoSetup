@@ -1,3 +1,5 @@
+mov.cdn77.com
+fra.cdn77.com
 nonexistent.domain
 glevideo.com
 ytimg.com
