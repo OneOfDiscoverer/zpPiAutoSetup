@@ -103,13 +103,13 @@ NFQWS_OPT="
 
 --filter-tcp=443
 --dpi-desync=multisplit --dpi-desync-split-pos=7,sniext+1 --dpi-desync-split-seqovl=683 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello_www_google_com.bin
---hostlist=/opt/zapret/ipset/ipset_all.list
+--ipset-exclude=/opt/zapret/ipset/ipset_all.list
 <HOSTLIST>
 --new
 
 --filter-tcp=443
 --dpi-desync=fake --dpi-desync-fake-tls-mod=none --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=2
---hostlist=/opt/zapret/ipset/ipset_all.list
+--ipset-exclude=/opt/zapret/ipset/ipset_all.list
 <HOSTLIST>
 --new
 "
