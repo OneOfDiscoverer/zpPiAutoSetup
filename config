@@ -102,7 +102,8 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=fake --dpi-desync-fake-tls-mod=none --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=2
+--dpi-desync=fake --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=2
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com
 --ipset=/opt/zapret/ipset/ipset.list
 --ipset-exclude=/opt/zapret/ipset/ipset_all.list
 --new
