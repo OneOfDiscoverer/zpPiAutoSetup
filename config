@@ -112,7 +112,7 @@ NFQWS_OPT="
 "
 
 # none,ipset,hostlist,autohostlist
-MODE_FILTER=none
+MODE_FILTER=autohostlist
 
 # openwrt only : donttouch,none,software,hardware
 FLOWOFFLOAD=donttouch
