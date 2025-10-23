@@ -125,7 +125,7 @@ NFQWS_OPT="
 --dpi-desync=multisplit --dpi-desync-split-pos=2,sniext+1
 --dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com --dpi-desync-fooling=md5sig --dpi-desync-autottl 2:2-12
---ipset-exclude=/opt/zapret/ipset/ipset_all.list
+--ipset-exclude=/opt/zapret/ipset/ipset.list
 --new
 "
 
