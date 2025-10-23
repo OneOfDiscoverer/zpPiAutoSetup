@@ -110,7 +110,7 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=syndata
+--dpi-desync=fake
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com --dpi-desync-fooling=md5sig --dpi-desync-autottl 2:2-12
 --ipset=/opt/zapret/ipset/ipset_all.list
 --new
