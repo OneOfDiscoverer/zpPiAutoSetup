@@ -101,32 +101,21 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---filter-tcp=443
---dpi-desync=fake --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=2
+--filter-tcp=443 
+--dpi-desync=fake --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=10
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com
 --ipset=/opt/zapret/ipset/ipset.list
---ipset-exclude=/opt/zapret/ipset/ipset_do.list
 --ipset-exclude=/opt/zapret/ipset/ipset_all.list
---new
-
---filter-tcp=443
---dpi-desync=multisplit --dpi-desync-split-seqovl=681 --dpi-desync-split-pos=1
---dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=docs.google.com --dpi-desync-autottl 2:2-12
---ipset=/opt/zapret/ipset/ipset_all.list
---new
-
---filter-tcp=443
---dpi-desync=fake --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=2
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=google.com
---ipset=/opt/zapret/ipset/ipset_do.list
+--ipset-exclude=/opt/zapret/ipset/ipset_do.list
+--ipset=/opt/zapret/ipset/ipset_ea.list
 --new
 
 --filter-tcp=443
 --dpi-desync=multisplit --dpi-desync-split-pos=2,sniext+1
 --dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.google.com --dpi-desync-fooling=md5sig --dpi-desync-autottl 2:2-12
---ipset-exclude=/opt/zapret/ipset/ipset.list
+--hostlist-domains=/opt/zapret/ipset/zapret-hosts-pre.txt
+--ipset=/opt/zapret/ipset/ipset_ea.list
 --new
 "
 
