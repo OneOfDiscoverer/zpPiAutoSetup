@@ -102,21 +102,22 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=multisplit --dpi-desync-split-pos=2,sniext+1
---dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=ya.ru --dpi-desync-fooling=md5sig --dpi-desync-autottl 2:2-12
---hostlist-domains=/opt/zapret/ipset/zapret-hosts-pre.txt
---hostlist-exclude-domains=ea.com
+--dpi-desync=fake --dpi-desync-repeats=10 --dpi-desync-fooling=badseq 
+--dpi-desync-badseq-increment=667
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=apple.com
+--ipset=/opt/zapret/ipset/ipset-service.list
+--ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
 --new
 
 --filter-tcp=443
---dpi-desync=fake --dpi-desync-repeats=2
+--dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld,endsld
+--dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
+--dpi-desync-autottl=2:2-12
 <HOSTLIST>
-#--hostlist-domain-exclude=amazonaws.com
---hostlist-exclude-domains=ea.com
 --new
 "
+
 
 # none,ipset,hostlist,autohostlist
 MODE_FILTER=autohostlist

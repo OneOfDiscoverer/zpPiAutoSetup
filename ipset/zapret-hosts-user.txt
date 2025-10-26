@@ -19,7 +19,6 @@ l.google.com
 youtube.com
 play.google.com
 1e100.net
-googleusercontent.com
 gstatic.com
 nhacmp3youtube.com
 youtubei.googleapis.com 
