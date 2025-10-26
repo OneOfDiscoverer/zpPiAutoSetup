@@ -101,18 +101,19 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---filter-tcp=443 
---dpi-desync=fake --dpi-desync-repeats=2 --dpi-desync-fooling=badseq --dpi-desync-badseq-increment=10
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
---ipset=/opt/zapret/ipset/ipset.list
---hostlist-exclude-domains=ea.com
---new
-
 --filter-tcp=443
 --dpi-desync=multisplit --dpi-desync-split-pos=2,sniext+1
 --dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=ya.ru --dpi-desync-fooling=md5sig --dpi-desync-autottl 2:2-12
 --hostlist-domains=/opt/zapret/ipset/zapret-hosts-pre.txt
+--hostlist-exclude-domains=ea.com
+--new
+
+--filter-tcp=443
+--dpi-desync=fake --dpi-desync-repeats=2
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
+<HOSTLIST>
+#--hostlist-domain-exclude=amazonaws.com
 --hostlist-exclude-domains=ea.com
 --new
 "
