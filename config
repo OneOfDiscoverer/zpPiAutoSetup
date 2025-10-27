@@ -70,8 +70,8 @@ TPWS_OPT="
 
 NFQWS_ENABLE=1
 # redirect outgoing traffic with connbytes limiter applied in both directions.
-NFQWS_PORTS_TCP=80,443
-NFQWS_PORTS_UDP=443
+NFQWS_PORTS_TCP=*
+NFQWS_PORTS_UDP=*
 # PKT_OUT means connbytes dir original
 # PKT_IN means connbytes dir reply
 # this is --dpi-desync-cutoff=nX kernel mode implementation for linux. it saves a lot of CPU.
@@ -115,6 +115,14 @@ NFQWS_OPT="
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
 --dpi-desync-autottl=2:2-12
 <HOSTLIST>
+--new
+
+--filter-udp=* 
+--dpi-desync=fake 
+--dpi-desync-any-protocol=1 
+--dpi-desync-repeats=9 
+--dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
+--dpi-desync-cutoff=n2 
 --new
 "
 
