@@ -70,8 +70,8 @@ TPWS_OPT="
 
 NFQWS_ENABLE=1
 # redirect outgoing traffic with connbytes limiter applied in both directions.
-NFQWS_PORTS_TCP=*
-NFQWS_PORTS_UDP=*
+NFQWS_PORTS_TCP=443,2053,2083,2087,2096,8443
+NFQWS_PORTS_UDP=443,993-9998,10000-19293,19294-19344,19345-27014,27016-49999,50000-50100,50101-65534
 # PKT_OUT means connbytes dir original
 # PKT_IN means connbytes dir reply
 # this is --dpi-desync-cutoff=nX kernel mode implementation for linux. it saves a lot of CPU.
@@ -102,28 +102,38 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=fake --dpi-desync-repeats=10 --dpi-desync-fooling=badseq 
---dpi-desync-badseq-increment=667
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=apple.com
---ipset=/opt/zapret/ipset/list.list
+--dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld,endsld
+--dpi-desync-split-seqovl=789 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
+--dpi-desync-fake-tls-mod=sni=calendar.google.com
+--ipset=/opt/zapret/ipset/ipset-hetzner.list
 --ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
 --new
 
 --filter-tcp=443
---dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld,endsld
+--dpi-desync=fake --dpi-desync-repeats=10 --dpi-desync-fooling=badseq 
+--dpi-desync-badseq-increment=679
+--dpi-desync-fake-tls-mod=sni=www.yahoo.com
+--ipset=/opt/zapret/ipset/ipset-service.list
+--ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
+--dpi-desync-autottl=1:2-16
+--new
+
+--filter-tcp=443
+--dpi-desync=multisplit --dpi-desync-repeats=10 --dpi-desync-split-pos=3,sld,midsld,endsld
 --dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
---dpi-desync-autottl=2:2-12
+--dpi-desync-fake-tls-mod=sni=www.yahoo.com
+--dpi-desync-autottl=1:2-16
 <HOSTLIST>
 --new
 
---filter-udp=* 
+--filter-udp=~433 
 --dpi-desync=fake 
 --dpi-desync-any-protocol=1 
 --dpi-desync-repeats=9 
 --dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
 --dpi-desync-cutoff=n2 
 --dpi-desync-autottl=6
+--ipset=/opt/zapret/ipset/list-bf.list
 --new
 "
 
