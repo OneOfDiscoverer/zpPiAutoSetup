@@ -102,7 +102,7 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=fake --dpi-desync-repeats=10 --dpi-desync-fooling=badseq 
+--dpi-desync=fake,multisplit --dpi-desync-fooling=badseq
 --dpi-desync-badseq-increment=667
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=apple.com
 --ipset=/opt/zapret/ipset/list.list
@@ -110,10 +110,11 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld,endsld
+--dpi-desync=fake,multisplit --dpi-desync-split-pos=3,sld,midsld
+--dpi-desync-fooling=md5sig
 --dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
---dpi-desync-autottl=2:2-12
+--dpi-desync-autottl
 <HOSTLIST>
 --new
 

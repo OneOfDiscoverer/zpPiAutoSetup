@@ -4,7 +4,7 @@
 # Purpose: Auto-pull git updates for zapret and run autosetup.sh if changes detected
 
 ZAPRET_DIR="/opt/zapret"
-LOG_FILE="/var/log/zapret_autoupdate.log"
+LOG_FILE="/opt/zapret_autoupdate.log"
 LOCK_FILE="/var/run/zapret_autoupdate.lock"
 
 # Function to log messages
