@@ -89,6 +89,8 @@ update_zapret() {
         
         # Check if pull was successful
         if [ $? -eq 0 ]; then
+	    
+	    echo "" > "$LOG_FILE"
             log_message "Git pull successful. Running autosetup.sh..."
             
             # Check if autosetup.sh exists and is executable
