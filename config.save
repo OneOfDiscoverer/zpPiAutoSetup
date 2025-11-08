@@ -113,7 +113,7 @@ NFQWS_OPT="
 
 --filter-tcp=443
 --dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld
---dpi-desync-split-seqovl=867 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
+--dpi-desync-split-seqovl=679 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
 --dpi-desync-autottl=2:2-32
 <HOSTLIST>

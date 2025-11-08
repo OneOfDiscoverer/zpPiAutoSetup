@@ -17,3 +17,4 @@ exit 0
 ./setup_zapret_autoupdate.sh
 ./sethosts.sh
 ./automacluci.sh
+./setenabler.sh

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление службой</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .button-group {
+            margin: 20px 0;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .start-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .stop-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status-running {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-stopped {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Управление службой</h1>
+        
+        <div class="button-group">
+            <button class="start-btn" onclick="controlService('start')">
+                ▶️ Включить службу
+            </button>
+            <button class="stop-btn" onclick="controlService('stop')">
+                ⏹️ Выключить службу
+            </button>
+        </div>
+        
+        <div id="status">Проверка статуса...</div>
+    </div>
+
+    <script>
+    function controlService(action) {
+        // Показываем loading state
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerHTML = 'Выполняется...';
+        statusDiv.className = '';
+        
+        fetch('/cgi-bin/service-control.sh', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=' + action
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сети');
+            }
+            return response.text();
+        })
+        .then(data => {
+            statusDiv.innerHTML = 'Результат: ' + data;
+            statusDiv.className = action === 'start' ? 'status-running' : 'status-stopped';
+            
+            // Обновляем статус через 2 секунды
+            setTimeout(checkStatus, 2000);
+        })
+        .catch(error => {
+            statusDiv.innerHTML = '❌ Ошибка: ' + error.message;
+            statusDiv.className = 'status-stopped';
+        });
+    }
+    
+    function checkStatus() {
+        fetch('/cgi-bin/service-control.sh?action=status')
+        .then(response => response.text())
+        .then(data => {
+            const statusDiv = document.getElementById('status');
+            if (data.includes('running')) {
+                statusDiv.innerHTML = '✅ Статус: Служба запущена';
+                statusDiv.className = 'status-running';
+            } else {
+                statusDiv.innerHTML = '❌ Статус: Служба остановлена';
+                statusDiv.className = 'status-stopped';
+            }
+        })
+        .catch(error => {
+            document.getElementById('status').innerHTML = '❌ Ошибка проверки статуса';
+        });
+    }
+    
+    // Проверяем статус при загрузке страницы
+    document.addEventListener('DOMContentLoaded', checkStatus);
+    
+    // Авто-обновление статуса каждые 10 секунд
+    setInterval(checkStatus, 10000);
+    </script>
+</body>
+</html>
