@@ -231,5 +231,11 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+
 # Execute main function
-main "$@"
+
+model=$(cat /tmp/sysinfo/model)
+
+if [ "$model" != "OrangePi Zero3" ]; then
+    main "$@"
+fi
