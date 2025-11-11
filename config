@@ -113,10 +113,13 @@ NFQWS_OPT="
 --new
 
 --filter-tcp=443
---dpi-desync=multisplit --dpi-desync-split-pos=3,sld,midsld
---dpi-desync-split-seqovl=867 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.yahoo.com
---dpi-desync-autottl=2:2-32
+--dpi-desync=multidisorder 
+--dpi-desync-split-pos=5,sld,midsld 
+--dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello.bin 
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com 
+--dpi-desync-split-seqovl=336 
+--dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin 
+--dpi-desync-autottl=2:2-12
 <HOSTLIST>
 --new
 
