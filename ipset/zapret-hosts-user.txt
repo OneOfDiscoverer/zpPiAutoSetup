@@ -8877,7 +8877,6 @@ dkqub.rutor-mirror.ru
 dkrolik.com
 dkvoshod.ru
 dl.getchu.com
-dl.tailscale.com
 dl.yourbittorrent.com
 dl0.anilib.top
 dl1.anilib.top
@@ -25297,7 +25296,6 @@ pk.lordfilm12.buzz
 pkc24.ru
 pkeraplit.ru
 pkfers.ru
-pkgs.tailscale.com
 pkk-2024.ru
 pkk.kartagov.net
 pkon.pirat.one
@@ -32303,7 +32301,6 @@ tadsiol.com
 tafsilar.info
 tagil-murmur.com
 taidpa.itunt.xyz
-tailscale.com
 tainster.com
 take-it.horizonroamer.monster
 take-now.co
