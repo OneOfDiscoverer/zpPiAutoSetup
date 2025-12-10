@@ -17,3 +17,4 @@ steampowered.com
 steamcommunity.com
 trafficmanager.net
 googleuserconten.com
+docker.io

@@ -8942,7 +8942,6 @@ doc-avto.life
 doc-straat.cfd
 doc-vopros.ru
 dochotel.ru
-docker.elastic.co
 docplan.ru
 docs.freekalmykia.org
 docs.redis.com
