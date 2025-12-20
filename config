@@ -107,7 +107,7 @@ NFQWS_OPT="
 --dpi-desync-repeats=6
 --dpi-desync-fooling=badseq
 --dpi-desync-badseq-increment=677
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=mail.yahoo.com
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com
 --ipset=/opt/zapret/ipset/ipset_awscloud.list
 --ipset=/opt/zapret/ipset/list.list
 --ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
@@ -119,7 +119,7 @@ NFQWS_OPT="
 --dpi-desync-fooling=badseq
 --dpi-desync-split-pos=4,midsld,endsld-2
 --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello.bin 
---dpi-desync-fake-tls-mod=rnd,dupsid,sni=mail.yahoo.com 
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com 
 --dpi-desync-split-seqovl=432 
 --dpi-desync-split-seqovl-pattern=/opt/zapret/files/fake/tls_clienthello.bin 
 --dpi-desync-autottl=2:2-128
