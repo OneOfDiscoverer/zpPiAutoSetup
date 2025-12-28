@@ -112,6 +112,7 @@ NFQWS_OPT="
 --dpi-desync-badseq-increment=3422
 --ipset=/opt/zapret/ipset/ipset_awscloud.list
 --ipset=/opt/zapret/ipset/cdn.list
+--ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
 --new
 
 --filter-tcp=443
