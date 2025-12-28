@@ -102,7 +102,7 @@ NFQWS_OPT="
 --new
 
 --dpi-desync=fake
-#--dpi-desync-repeats=9
+--dpi-desync-repeats=9
 --orig-ttl=1
 --orig-mod-start=s1
 --orig-mod-cutoff=d1
