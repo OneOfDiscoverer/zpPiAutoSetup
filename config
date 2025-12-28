@@ -114,6 +114,7 @@ NFQWS_OPT="
 --ipset=/opt/zapret/ipset/list.list
 #--ipset=/opt/zapret/ipset/cdn.list
 --ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
+--ipset-exclude=/opt/zapret/ipset/ipset_ea.list
 --new
 
 --filter-tcp=443
@@ -129,14 +130,14 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---filter-udp=* 
---dpi-desync=fake 
---dpi-desync-any-protocol=1 
---dpi-desync-repeats=9 
---dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
---dpi-desync-cutoff=n2 
---dpi-desync-autottl=6
---new
+#--filter-udp=* 
+#--dpi-desync=fake 
+#--dpi-desync-any-protocol=1 
+#--dpi-desync-repeats=9 
+#--dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
+#--dpi-desync-cutoff=n2 
+#--dpi-desync-autottl=6
+#--new
 "
 
 
