@@ -6,6 +6,11 @@ gamelift.eu-central-1.amazonaws.com
 
 gamelift.eu-central-1.api.aws
 
+meta.com
+oculus.com
+facebook.com
+fbcdn.net
+akamaihd.net
 
 0035.pirat.one
 0087.pirat.one
