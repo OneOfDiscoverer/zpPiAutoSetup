@@ -101,21 +101,21 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
-#--dpi-desync=fake
-#--dpi-desync-repeats=9
-#--orig-ttl=1
-#--orig-mod-start=s1
-#--orig-mod-cutoff=d1
-#--dpi-desync-fake-tls-mod=dupsid,sni=prod.otel.kaizen.nvidia.com
-#--dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello.bin
-#--dpi-desync-fooling=badseq
-#--dpi-desync-badseq-increment=3422
-#--ipset=/opt/zapret/ipset/ipset_awscloud.list
+--dpi-desync=fake
+--dpi-desync-repeats=9
+--orig-ttl=1
+--orig-mod-start=s1
+--orig-mod-cutoff=d1
+--dpi-desync-fake-tls-mod=dupsid,sni=prod.otel.kaizen.nvidia.com
+--dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello.bin
+--dpi-desync-fooling=badseq
+--dpi-desync-badseq-increment=3422
+--ipset=/opt/zapret/ipset/ipset_awscloud.list
 #--ipset=/opt/zapret/ipset/list.list
 #--ipset=/opt/zapret/ipset/cdn.list
 #--ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
 #--ipset-exclude=/opt/zapret/ipset/ipset_ea.list
-#--new
+--new
 
 --filter-tcp=443
 --dpi-desync=multidisorder 
