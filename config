@@ -101,14 +101,13 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---dpi-desync=fake,multisplit 
+--dpi-desync=fake
 --orig-ttl=1
 --orig-mod-start=s1
 --orig-mod-cutoff=d1
---dpi-desync-fooling=badseq
---dpi-desync-split-seqovl=654 
---dpi-desync-split-pos=2,midsld,endsld-2 
+--dpi-desync-fooling=badseq --dpi-desync-badseq-increment=1 --dpi-desync-badack-increment=0
 --dpi-desync-repeats=8 
+--dpi-desync-fake-tls-mod=rnd,dupsid,sni=chatgpt.com
 --dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_max_ru.bin
 --ipset=/opt/zapret/ipset/ipset_awscloud.list
 --ipset=/opt/zapret/ipset/list.list
@@ -128,14 +127,14 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
-#--filter-udp=* 
-#--dpi-desync=fake 
-#--dpi-desync-any-protocol=1 
-#--dpi-desync-repeats=9 
-#--dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
-#--dpi-desync-cutoff=n2 
-#--dpi-desync-autottl=6
-#--new
+--filter-udp=* 
+--dpi-desync=fake 
+--dpi-desync-any-protocol=1 
+--dpi-desync-repeats=9 
+--dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
+--dpi-desync-cutoff=n2 
+--dpi-desync-autottl=6
+--new
 "
 
 
@@ -143,7 +142,7 @@ NFQWS_OPT="
 MODE_FILTER=autohostlist
 
 # openwrt only : donttouch,none,software,hardware
-FLOWOFFLOAD=donttouch
+FLOWOFFLOAD=none
 
 # openwrt: specify networks to be treated as LAN. default is "lan"
 #OPENWRT_LAN="lan lan2 lan3"
