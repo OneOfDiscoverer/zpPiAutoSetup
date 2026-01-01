@@ -28,6 +28,8 @@
 #define BADSEQ_INCREMENT_DEFAULT 	-10000
 #define BADSEQ_ACK_INCREMENT_DEFAULT 	-66000
 
+#define TS_INCREMENT_DEFAULT 		-600000
+
 #define IPFRAG_UDP_DEFAULT 8
 #define IPFRAG_TCP_DEFAULT 32
 
@@ -66,6 +68,8 @@
 
 #define MAX_GIDS 64
 
+extern const char * tld[6];
+
 enum log_target { LOG_TARGET_CONSOLE=0, LOG_TARGET_FILE, LOG_TARGET_SYSLOG, LOG_TARGET_ANDROID };
 
 struct fake_tls_mod_cache
@@ -74,11 +78,26 @@ struct fake_tls_mod_cache
 };
 struct fake_tls_mod
 {
-	char sni[64];
+	char sni[128];
 	uint32_t mod;
+};
+struct hostfakesplit_mod
+{
+	char host[128];
+	size_t host_size;
+	int ordering;
+};
+struct fakedsplit_mod
+{
+	int ordering;
+};
+struct tcp_mod
+{
+	bool seq;
 };
 
 typedef enum {SS_NONE=0,SS_SYN,SS_SYNACK,SS_ACKSYN} t_synack_split;
+typedef enum {IPID_SEQ=0,IPID_SEQ_GROUP,IPID_RND,IPID_ZERO,IPID_SAME} t_ip_id_mode;
 
 struct desync_profile
 {
@@ -87,9 +106,12 @@ struct desync_profile
 	uint16_t wsize,wssize;
 	uint8_t wscale,wsscale;
 	char wssize_cutoff_mode; // n - packets, d - data packets, s - relative sequence
+	bool wssize_no_forced_cutoff;
 	unsigned int wssize_cutoff;
 
 	t_synack_split synack_split;
+
+	t_ip_id_mode ip_id_mode;
 
 	bool hostcase, hostnospace, domcase, methodeol;
 	char hostspell[4];
@@ -100,7 +122,7 @@ struct desync_profile
 	// multisplit
 	struct proto_pos splits[MAX_SPLITS];
 	int split_count;
-	struct proto_pos seqovl;
+	struct proto_pos seqovl,hostfakesplit_midhost;
 
 	char dup_start_mode, dup_cutoff_mode; // n - packets, d - data packets, s - relative sequence
 	bool dup_replace;
@@ -108,27 +130,36 @@ struct desync_profile
 	unsigned int dup_repeats;
 	uint8_t dup_ttl, dup_ttl6;
 	uint32_t dup_fooling_mode;
-	uint32_t dup_badseq_increment, dup_badseq_ack_increment;
+	uint32_t dup_ts_increment, dup_badseq_increment, dup_badseq_ack_increment;
 	autottl dup_autottl, dup_autottl6;
+	uint16_t dup_tcp_flags_set, dup_tcp_flags_unset;
+	t_ip_id_mode dup_ip_id_mode;
 
 	char orig_mod_start_mode, orig_mod_cutoff_mode; // n - packets, d - data packets, s - relative sequence
 	unsigned int orig_mod_start, orig_mod_cutoff;
 	uint8_t orig_mod_ttl, orig_mod_ttl6;
 	autottl orig_autottl, orig_autottl6;
+	uint16_t orig_tcp_flags_set, orig_tcp_flags_unset;
 
 	char desync_start_mode, desync_cutoff_mode; // n - packets, d - data packets, s - relative sequence
 	unsigned int desync_start, desync_cutoff;
 	uint8_t desync_ttl, desync_ttl6;
 	autottl desync_autottl, desync_autottl6;
 	uint32_t desync_fooling_mode;
-	uint32_t desync_badseq_increment, desync_badseq_ack_increment;
+	uint32_t desync_ts_increment, desync_badseq_increment, desync_badseq_ack_increment;
+	uint16_t desync_tcp_flags_set, desync_tcp_flags_unset;
 
 	struct blob_collection_head fake_http,fake_tls,fake_unknown,fake_unknown_udp,fake_quic,fake_wg,fake_dht,fake_discord,fake_stun;
-	uint8_t fake_syndata[FAKE_MAX_TCP],seqovl_pattern[FAKE_MAX_TCP],fsplit_pattern[FAKE_MAX_TCP],udplen_pattern[FAKE_MAX_UDP];
-	size_t fake_syndata_size;
+	uint8_t fake_syndata[FAKE_MAX_TCP],seqovl_pattern[FAKE_MAX_TCP],udplen_pattern[FAKE_MAX_UDP];
+	uint8_t *fsplit_pattern;
+	size_t fake_syndata_size, fsplit_pattern_size;
 
 	struct fake_tls_mod tls_mod_last;
 	struct blob_item *tls_fake_last;
+
+	struct hostfakesplit_mod hfs_mod;
+	struct fakedsplit_mod fs_mod;
+	struct tcp_mod tcp_mod;
 
 	int udplen_increment;
 
@@ -158,7 +189,7 @@ struct desync_profile
 #define PROFILE_IPSETS_ABSENT(dp) (!LIST_FIRST(&(dp)->ips_collection) && !LIST_FIRST(&(dp)->ips_collection_exclude))
 #define PROFILE_IPSETS_EMPTY(dp) (ipset_collection_is_empty(&(dp)->ips_collection) && ipset_collection_is_empty(&(dp)->ips_collection_exclude))
 #define PROFILE_HOSTLISTS_EMPTY(dp) (hostlist_collection_is_empty(&(dp)->hl_collection) && hostlist_collection_is_empty(&(dp)->hl_collection_exclude))
-#define PROFILE_HAS_ORIG_MOD(dp) ((dp)->orig_mod_ttl || (dp)->orig_mod_ttl6)
+#define PROFILE_HAS_ORIG_MOD(dp) ((dp)->orig_mod_ttl || (dp)->orig_mod_ttl6 || (dp)->orig_tcp_flags_set || (dp)->orig_tcp_flags_unset)
 
 struct desync_profile_list {
 	struct desync_profile dp;
@@ -198,8 +229,10 @@ struct params_s
 	
 #ifdef __CYGWIN__
 	struct str_list_head ssid_filter,nlm_filter;
+	struct str_list_head wf_raw_part;
 #else
 	bool droproot;
+	char *user;
 	uid_t uid;
 	gid_t gid[MAX_GIDS];
 	int gid_count;
@@ -229,6 +262,10 @@ struct params_s
 
 extern struct params_s params;
 extern const char *progname;
+#if !defined( __OpenBSD__) && !defined(__ANDROID__)
+void cleanup_args(struct params_s *params);
+#endif
+void cleanup_params(struct params_s *params);
 
 int DLOG(const char *format, ...);
 int DLOG_ERR(const char *format, ...);

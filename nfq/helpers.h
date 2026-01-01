@@ -33,6 +33,8 @@ bool append_to_list_file(const char *filename, const char *s);
 
 void expand_bits(void *target, const void *source, unsigned int source_bitlen, unsigned int target_bytelen);
 
+bool strip_host_to_ip(char *host);
+
 void print_sockaddr(const struct sockaddr *sa);
 void ntop46(const struct sockaddr *sa, char *str, size_t len);
 void ntop46_port(const struct sockaddr *sa, char *str, size_t len);
@@ -68,7 +70,7 @@ static inline uint32_t pntoh32(const uint8_t *p) {
 }
 
 bool parse_hex_str(const char *s, uint8_t *pbuf, size_t *size);
-void fill_pattern(uint8_t *buf,size_t bufsize,const void *pattern,size_t patsize);
+void fill_pattern(uint8_t *buf,size_t bufsize,const void *pattern,size_t patsize,size_t offset);
 
 int fprint_localtime(FILE *F);
 

@@ -25,7 +25,7 @@
 	memcpy(elem->str, keystr, keystr_len); \
 	elem->str[keystr_len] = 0; \
 	oom = false; \
-	HASH_ADD_KEYPTR(hh, *ppool, elem->str, strlen(elem->str), elem); \
+	HASH_ADD_KEYPTR(hh, *ppool, elem->str, keystr_len, elem); \
 	if (oom) \
 	{ \
 		free(elem->str); \
@@ -33,9 +33,12 @@
 		return false; \
 	}
 #define ADD_HOSTLIST_POOL(etype, ppool, keystr, keystr_len, flg) \
-	ADD_STR_POOL(etype,ppool,keystr,keystr_len); \
-	elem->flags = flg;
-
+	etype *elem_find; \
+	HASH_FIND(hh, *ppool, keystr, keystr_len, elem_find); \
+	if (!elem_find) { \
+		ADD_STR_POOL(etype,ppool,keystr,keystr_len); \
+		elem->flags = flg; \
+	}
 
 #undef uthash_nonfatal_oom
 #define uthash_nonfatal_oom(elt) ut_oom_recover(elt)
@@ -616,6 +619,7 @@ static void ipcache_item_init(ip_cache_item *item)
 {
 	ipcache_item_touch(item);
 	item->hostname = NULL;
+	item->hostname_is_ip = false;
 }
 static void ipcache_item_destroy(ip_cache_item *item)
 {
@@ -675,7 +679,7 @@ static void ipcache4Print(ip_cache4 *ipcache)
 	{
 		*s_ip=0;
 		inet_ntop(AF_INET, &ipc->key.addr, s_ip, sizeof(s_ip));
-		printf("%s : hostname=%s now=last+%llu\n", s_ip, ipc->data.hostname ? ipc->data.hostname : "", (unsigned long long)(now-ipc->data.last));
+		printf("%s : hostname=%s hostname_is_ip=%u now=last+%llu\n", s_ip, ipc->data.hostname ? ipc->data.hostname : "", ipc->data.hostname_is_ip, (unsigned long long)(now-ipc->data.last));
 	}
 }
 
@@ -732,7 +736,7 @@ static void ipcache6Print(ip_cache6 *ipcache)
 	{
 		*s_ip=0;
 		inet_ntop(AF_INET6, &ipc->key.addr, s_ip, sizeof(s_ip));
-		printf("%s : hostname=%s now=last+%llu\n", s_ip, ipc->data.hostname ? ipc->data.hostname : "", (unsigned long long)(now-ipc->data.last));
+		printf("%s : hostname=%s hostname_is_ip=%u now=last+%llu\n", s_ip, ipc->data.hostname ? ipc->data.hostname : "", ipc->data.hostname_is_ip, (unsigned long long)(now-ipc->data.last));
 	}
 }
 

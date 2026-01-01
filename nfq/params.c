@@ -20,6 +20,7 @@ const char *progname = "nfqws";
 #error UNKNOWN_SYSTEM_TIME
 #endif
 
+const char * tld[6] = { "com","org","net","edu","gov","biz" };
 
 int DLOG_FILE(FILE *F, const char *format, va_list args)
 {
@@ -218,6 +219,9 @@ void dp_init(struct desync_profile *dp)
 	LIST_INIT(&dp->ips_collection_exclude);
 	LIST_INIT(&dp->pf_tcp);
 	LIST_INIT(&dp->pf_udp);
+#ifdef HAS_FILTER_SSID
+	LIST_INIT(&dp->filter_ssid);
+#endif
 
 	memcpy(dp->hostspell, "host", 4); // default hostspell
 	dp->desync_skip_nosni = true;
@@ -227,6 +231,7 @@ void dp_init(struct desync_profile *dp)
 	dp->fake_syndata_size = 16;
 	dp->wscale=-1; // default - dont change scale factor (client)
 	dp->desync_ttl6 = dp->dup_ttl6 = dp->orig_mod_ttl6 = 0xFF; // unused
+	dp->desync_ts_increment = dp->dup_ts_increment = TS_INCREMENT_DEFAULT;
 	dp->desync_badseq_increment = dp->dup_badseq_increment = BADSEQ_INCREMENT_DEFAULT;
 	dp->desync_badseq_ack_increment = dp->dup_badseq_ack_increment = BADSEQ_ACK_INCREMENT_DEFAULT;
 	dp->wssize_cutoff_mode = dp->desync_start_mode = dp->desync_cutoff_mode = dp->dup_start_mode = dp->dup_cutoff_mode = dp->orig_mod_start_mode = dp->orig_mod_cutoff_mode = 'n'; // packet number by default
@@ -235,16 +240,17 @@ void dp_init(struct desync_profile *dp)
 	dp->hostlist_auto_fail_time = HOSTLIST_AUTO_FAIL_TIME_DEFAULT;
 	dp->hostlist_auto_retrans_threshold = HOSTLIST_AUTO_RETRANS_THRESHOLD_DEFAULT;
 	dp->filter_ipv4 = dp->filter_ipv6 = true;
+	dp->dup_ip_id_mode = IPID_SAME;
 }
 bool dp_fake_defaults(struct desync_profile *dp)
 {
 	struct blob_item *item;
 	if (blob_collection_empty(&dp->fake_http))
-		if (!blob_collection_add_blob(&dp->fake_http,fake_http_request_default,strlen(fake_http_request_default),0))
+		if (!blob_collection_add_blob(&dp->fake_http,fake_http_request_default,strlen(fake_http_request_default),0,0))
 			return false;
 	if (blob_collection_empty(&dp->fake_tls))
 	{
-		if (!(item=blob_collection_add_blob(&dp->fake_tls,fake_tls_clienthello_default,sizeof(fake_tls_clienthello_default),4+sizeof(((struct fake_tls_mod*)0)->sni))))
+		if (!(item=blob_collection_add_blob(&dp->fake_tls,fake_tls_clienthello_default,sizeof(fake_tls_clienthello_default),4+sizeof(((struct fake_tls_mod*)0)->sni),0)))
 			return false;
 		if (!(item->extra2 = malloc(sizeof(struct fake_tls_mod))))
 			return false;
@@ -252,13 +258,13 @@ bool dp_fake_defaults(struct desync_profile *dp)
 	}
 	if (blob_collection_empty(&dp->fake_unknown))
 	{
-		if (!(item=blob_collection_add_blob(&dp->fake_unknown,NULL,256,0)))
+		if (!(item=blob_collection_add_blob(&dp->fake_unknown,NULL,256,0,0)))
 			return false;
 		memset(item->data,0,item->size);
 	}
 	if (blob_collection_empty(&dp->fake_quic))
 	{
-		if (!(item=blob_collection_add_blob(&dp->fake_quic,NULL,620,0)))
+		if (!(item=blob_collection_add_blob(&dp->fake_quic,NULL,620,0,0)))
 			return false;
 		memset(item->data,0,item->size);
 		item->data[0] = 0x40;
@@ -268,7 +274,7 @@ bool dp_fake_defaults(struct desync_profile *dp)
 	{
 		if (blob_collection_empty(*fake))
 		{
-			if (!(item=blob_collection_add_blob(*fake,NULL,64,0)))
+			if (!(item=blob_collection_add_blob(*fake,NULL,64,0,0)))
 				return false;
 			memset(item->data,0,item->size);
 		}
@@ -296,6 +302,8 @@ struct desync_profile_list *dp_list_add(struct desync_profile_list_head *head)
 }
 static void dp_clear_dynamic(struct desync_profile *dp)
 {
+	free(dp->fsplit_pattern);
+
 	hostlist_collection_destroy(&dp->hl_collection);
 	hostlist_collection_destroy(&dp->hl_collection_exclude);
 	ipset_collection_destroy(&dp->ips_collection);
@@ -344,4 +352,34 @@ bool dp_list_need_all_out(struct desync_profile_list_head *head)
 		if (dpl->dp.dup_repeats || PROFILE_HAS_ORIG_MOD(&dpl->dp))
 			return true;
 	return false;
+}
+
+
+#if !defined( __OpenBSD__) && !defined(__ANDROID__)
+void cleanup_args(struct params_s *params)
+{
+	wordfree(&params->wexp);
+}
+#endif
+
+void cleanup_params(struct params_s *params)
+{
+#if !defined( __OpenBSD__) && !defined(__ANDROID__)
+	cleanup_args(params);
+#endif
+
+	ConntrackPoolDestroy(&params->conntrack);
+
+	dp_list_destroy(&params->desync_profiles);
+
+	hostlist_files_destroy(&params->hostlists);
+	ipset_files_destroy(&params->ipsets);
+	ipcacheDestroy(&params->ipcache);
+#ifdef __CYGWIN__
+	strlist_destroy(&params->ssid_filter);
+	strlist_destroy(&params->nlm_filter);
+	strlist_destroy(&params->wf_raw_part);
+#else
+	free(params->user); params->user=NULL;
+#endif
 }

@@ -12,7 +12,7 @@
 		HASH_DEL(*ppool, elem); \
 		free(elem); \
 	}
-	
+
 #define ADD_STR_POOL(etype, ppool, keystr, keystr_len) \
 	etype *elem; \
 	if (!(elem = (etype*)malloc(sizeof(etype)))) \
@@ -25,7 +25,7 @@
 	memcpy(elem->str, keystr, keystr_len); \
 	elem->str[keystr_len] = 0; \
 	oom = false; \
-	HASH_ADD_KEYPTR(hh, *ppool, elem->str, strlen(elem->str), elem); \
+	HASH_ADD_KEYPTR(hh, *ppool, elem->str, keystr_len, elem); \
 	if (oom) \
 	{ \
 		free(elem->str); \
@@ -33,9 +33,12 @@
 		return false; \
 	}
 #define ADD_HOSTLIST_POOL(etype, ppool, keystr, keystr_len, flg) \
-	ADD_STR_POOL(etype,ppool,keystr,keystr_len); \
-	elem->flags = flg;
-
+	etype *elem_find; \
+	HASH_FIND(hh, *ppool, keystr, keystr_len, elem_find); \
+	if (!elem_find) { \
+		ADD_STR_POOL(etype,ppool,keystr,keystr_len); \
+		elem->flags = flg; \
+	}
 
 #undef uthash_nonfatal_oom
 #define uthash_nonfatal_oom(elt) ut_oom_recover(elt)
@@ -576,8 +579,9 @@ struct blob_item *blob_collection_add(struct blob_collection_head *head)
 	}
 	return entry;
 }
-struct blob_item *blob_collection_add_blob(struct blob_collection_head *head, const void *data, size_t size, size_t size_reserve)
+struct blob_item *blob_collection_add_blob(struct blob_collection_head *head, const void *data, size_t size, size_t size_reserve, size_t offset)
 {
+	if (offset>=size) return NULL;
 	struct blob_item *entry = calloc(1,sizeof(struct blob_item));
 	if (!entry) return NULL;
 	if (!(entry->data = malloc(size+size_reserve))) 
@@ -588,6 +592,7 @@ struct blob_item *blob_collection_add_blob(struct blob_collection_head *head, co
 	if (data) memcpy(entry->data,data,size);
 	entry->size = size;
 	entry->size_buf = size+size_reserve;
+	entry->offset = offset;
 
 	// insert to the end
 	struct blob_item *itemc,*iteml=LIST_FIRST(head);
@@ -629,6 +634,7 @@ static void ipcache_item_init(ip_cache_item *item)
 {
 	ipcache_item_touch(item);
 	item->hostname = NULL;
+	item->hostname_is_ip = false;
 	item->hops = 0;
 }
 static void ipcache_item_destroy(ip_cache_item *item)
@@ -690,7 +696,7 @@ static void ipcache4Print(ip_cache4 *ipcache)
 	{
 		*s_ip=0;
 		inet_ntop(AF_INET, &ipc->key.addr, s_ip, sizeof(s_ip));
-		printf("%s iface=%s : hops %u hostname=%s now=last+%llu\n", s_ip, ipc->key.iface, ipc->data.hops, ipc->data.hostname ? ipc->data.hostname : "", (unsigned long long)(now-ipc->data.last));
+		printf("%s iface=%s : hops %u hostname=%s hostname_is_ip=%u now=last+%llu\n", s_ip, ipc->key.iface, ipc->data.hops, ipc->data.hostname ? ipc->data.hostname : "", ipc->data.hostname_is_ip, (unsigned long long)(now-ipc->data.last));
 	}
 }
 
@@ -748,7 +754,7 @@ static void ipcache6Print(ip_cache6 *ipcache)
 	{
 		*s_ip=0;
 		inet_ntop(AF_INET6, &ipc->key.addr, s_ip, sizeof(s_ip));
-		printf("%s iface=%s : hops %u hostname=%s now=last+%llu\n", s_ip, ipc->key.iface, ipc->data.hops, ipc->data.hostname ? ipc->data.hostname : "", (unsigned long long)(now-ipc->data.last));
+		printf("%s iface=%s : hops %u hostname=%s hostname_is_ip=%u now=last+%llu\n", s_ip, ipc->key.iface, ipc->data.hops, ipc->data.hostname ? ipc->data.hostname : "", ipc->data.hostname_is_ip, (unsigned long long)(now-ipc->data.last));
 	}
 }
 
