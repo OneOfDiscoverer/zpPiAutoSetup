@@ -101,19 +101,19 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---filter-tcp=443
---dpi-desync=fake
---orig-ttl=1
---orig-mod-start=s1
---orig-mod-cutoff=d1
+--filter-tcp=443 
+--dpi-desync=hostfakesplit
+--dpi-desync-hostfakesplit-mod=host=www.google.com
+--dpi-desync-hostfakesplit-mod=altorder=0
+--dpi-desync-hostfakesplit-midhost=host-2
+--ip-id=seqgroup
 --dpi-desync-fooling=badseq
---dpi-desync-repeats=8 
---dpi-desync-fake-tls-mod=dupsid,sni=chatgpt.com
---dpi-desync-fake-tls=/opt/zapret/files/fake/tls_clienthello_max_ru.bin
+--dpi-desync-badseq-increment=0
 --ipset=/opt/zapret/ipset/ipset_awscloud.list
 --ipset=/opt/zapret/ipset/list.list
 --ipset=/opt/zapret/ipset/cdn.list
 --ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
+--dpi-desync-ttl=6
 --new
 
 --filter-tcp=443
@@ -126,15 +126,6 @@ NFQWS_OPT="
 --dpi-desync-badseq-increment=0
 <HOSTLIST>
 --new
-
-#--filter-udp=* 
-#--dpi-desync=fake 
-#--dpi-desync-any-protocol=1 
-#--dpi-desync-repeats=9 
-#--dpi-desync-fake-unknown-udp="/opt/zapret/files/fake/quic_initial_www_google_com.bin" 
-#--dpi-desync-cutoff=n2 
-#--dpi-desync-autottl=6
-#--new
 "
 
 
