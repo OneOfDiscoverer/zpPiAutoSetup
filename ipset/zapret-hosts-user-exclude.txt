@@ -6,6 +6,12 @@ steamcommunity.com
 battle.net
 github.com
 vk.com
+vk.ru
+vk.me
+vk.cc
+vkvideo.ru
+oauth.vk.ru
+
 yandex.ru
 rutube.ru
 rurube.com
@@ -18,3 +24,6 @@ steamcommunity.com
 trafficmanager.net
 googleuserconten.com
 docker.io
+mail.ru
+mail.com
+

@@ -8,6 +8,7 @@ gamelift.eu-central-1.api.aws
 
 ovh.com
 cdn77.org
+cdn77.com
 meta.com
 oculus.com
 facebook.com

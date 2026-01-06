@@ -101,18 +101,18 @@ NFQWS_OPT="
 <HOSTLIST>
 --new
 
---filter-tcp=443 
---dpi-desync=hostfakesplit
---dpi-desync-hostfakesplit-mod=host=2gis.ru
---dpi-desync-hostfakesplit-mod=altorder=0
---dpi-desync-hostfakesplit-midhost=host-2
---ip-id=seqgroup
---ipset=/opt/zapret/ipset/aws.list
---ipset=/opt/zapret/ipset/cloudflare.list
---ipset=/opt/zapret/ipset/cdn77.list
---ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
---dpi-desync-autottl=-3
---new
+#--filter-tcp=443 
+#--dpi-desync=hostfakesplit
+#--dpi-desync-hostfakesplit-mod=host=2gis.ru
+#--dpi-desync-hostfakesplit-mod=altorder=0
+#--dpi-desync-hostfakesplit-midhost=host-2
+#--ip-id=zero
+#--ipset=/opt/zapret/ipset/aws.list
+#--ipset=/opt/zapret/ipset/cloudflare.list
+#--ipset=/opt/zapret/ipset/cdn77.list
+#--ipset-exclude=/opt/zapret/ipset/zapret-hosts-user-ipban.txt
+#--dpi-desync-autottl=-3
+#--new
 
 --filter-tcp=443
 --dpi-desync=hostfakesplit
@@ -122,7 +122,7 @@ NFQWS_OPT="
 --ip-id=seqgroup
 --dpi-desync-fooling=badseq
 --dpi-desync-badseq-increment=0
-<HOSTLIST_NOAUTO>
+<HOSTLIST>
 --new
 "
 
