@@ -124,6 +124,14 @@ NFQWS_OPT="
 --dpi-desync-badseq-increment=0
 <HOSTLIST>
 --new
+
+--filter-udp=5055-5058,27000-27002,27015-27060,27114
+--dpi-desync=fake
+--dpi-desync-autottl=2
+--dpi-desync-repeats=4
+--dpi-desync-any-protocol=1
+--dpi-desync-fake-unknown-udp=/opt/zapret/files/fake/quic_initial_www_google_com.bin
+--dpi-desync-cutoff=n2
 "
 
 
