@@ -27,3 +27,6 @@ docker.io
 mail.ru
 mail.com
 
+fips.ru
+web.telegram.org
+
